@@ -1,0 +1,41 @@
+# build output
+dist/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# setting folders
+.idea/
+.vscode/
+
+# Pagfind earch index
+public/pagefind/*
+
+# Agents
+.codex/
+.agents/
+TODO.md
+skills-lock.json
+
+# Claude Code: the repo skill and shared settings are the automation contract
+# and must be versioned. Only per-machine local overrides stay untracked.
+.claude/*
+!.claude/skills/
+!.claude/settings.json
+.claude/settings.local.json
