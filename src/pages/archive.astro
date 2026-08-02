@@ -41,11 +41,11 @@ function formatDay(date: Date) {
       id="archive-search"
       type="search"
       placeholder="Search titles..."
-      class="w-full sm:w-72 rounded border border-border bg-background px-3 py-2 text-sm"
+      class="w-full sm:w-72 rounded border border-border bg-background px-3 py-2 text-ui"
     />
 
     <label
-      class="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer"
+      class="flex items-center gap-2 text-ui text-muted-foreground cursor-pointer"
     >
       <input
         id="english-only"
@@ -61,12 +61,12 @@ function formatDay(date: Date) {
     aria-label="Filter writings by tag"
     data-pagefind-ignore
   >
-    <button class="filter-link text-sm text-muted-foreground cursor-pointer link-hover is-active" data-filter="all" type="button"
+    <button class="filter-link text-ui text-muted-foreground cursor-pointer link-hover is-active" data-filter="all" type="button"
       >all</button
     >
     {allTags.map((tag) => (
       <button 
-        class="relative filter-link text-sm text-muted-foreground cursor-pointer link-hover" 
+        class="relative filter-link text-ui text-muted-foreground cursor-pointer link-hover" 
         data-filter={tag} 
         type="button">
         {tag}
@@ -92,7 +92,7 @@ function formatDay(date: Date) {
             <span class="font-code text-md font-medium uppercase tracking-widest text-muted-foreground">
               {year}
             </span>
-            <span class="font-code text-sm tabular-nums text-muted-foreground">
+            <span class="font-code text-ui tabular-nums text-muted-foreground">
               <span class="count-display">{posts.length}</span>&thinsp;writings
             </span>
           </div>
@@ -120,7 +120,7 @@ function formatDay(date: Date) {
           <!-- Show more (hidden until JS evaluates; only rendered when needed) -->
           {hasMore && (
             <button
-              class="show-more-btn text-sm text-muted-foreground cursor-pointer link-hover mt-1"
+              class="show-more-btn text-ui text-muted-foreground cursor-pointer link-hover mt-1"
               type="button"
               data-year={String(year)}
             >

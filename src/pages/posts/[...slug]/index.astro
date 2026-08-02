@@ -39,12 +39,13 @@ const {
   nextPost,
 } = Astro.props;
 
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
 ---
 <PostLayout
   post={post}
   prevPost={prevPost}
   nextPost={nextPost}
+  headings={headings}
 >
   <Content />
 </PostLayout>

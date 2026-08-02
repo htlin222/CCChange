@@ -3,31 +3,43 @@ import ChevronUp from "@/assets/chevron-up.svg"
 ---
 <button
   id="scroll-to-top" class="scroll-to-top"
-  aria-label="Scroll to top"
+  aria-label="回到頂端"
   hidden
 >
   <ChevronUp class="size-5 text-muted-foreground" />
 </button>
 
 <script>
-  const btn = document.getElementById('scroll-to-top');
-  if (!btn) throw new Error('scroll-to-top button not found');
+  // ClientRouter swaps <body>, so a one-shot setup leaves the observer watching
+  // a detached sentinel and the button stops appearing after the first
+  // client-side navigation. Re-run on every swap and tear the old one down.
+  let observer: IntersectionObserver | null = null;
 
-  // Use IntersectionObserver on a sentinel at page top
-  const sentinel = document.createElement('div');
-  sentinel.style.cssText = 'position:absolute;top:0;left:0;height:1px;width:1px;pointer-events:none;';
-  document.body.prepend(sentinel);
+  function initScrollToTop() {
+    observer?.disconnect();
 
-  const observer = new IntersectionObserver(
-    ([entry]) => {
-      btn.hidden = entry.isIntersecting;
-    },
-    { threshold: 0, rootMargin: '400px 0px 0px 0px' }
-  );
+    const btn = document.getElementById("scroll-to-top");
+    if (!btn) return;
 
-  observer.observe(sentinel);
+    const sentinel = document.createElement("div");
+    sentinel.style.cssText =
+      "position:absolute;top:0;left:0;height:1px;width:1px;pointer-events:none;";
+    document.body.prepend(sentinel);
 
-  btn.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+    observer = new IntersectionObserver(
+      ([entry]) => {
+        btn.hidden = entry.isIntersecting;
+      },
+      { threshold: 0, rootMargin: "400px 0px 0px 0px" },
+    );
+    observer.observe(sentinel);
+
+    btn.addEventListener("click", () => {
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+    });
+  }
+
+  initScrollToTop();
+  document.addEventListener("astro:after-swap", initScrollToTop);
 </script>

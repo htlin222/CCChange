@@ -24,13 +24,13 @@ const {
     {posts.map((post) => (
       <div class="flex flex-col space-y-3 py-4 first:pt-0 border-b last:border-0 border-border/50 group hover:translate-x-2 transition-transform ease-fluid">
         <PostTitle post={post} 
-          class="text-base md:text-xl font-medium text-balance leading-snug link-hover"/>
+          class="text-body md:text-lead font-medium text-balance leading-snug link-hover"/>
         {post.data.description && (
-          <p class="text-sm italic leading-normal text-muted-foreground md:max-w-xl">
+          <p class="text-ui italic leading-normal text-muted-foreground md:max-w-xl">
             {post.data.description}
           </p>
         )}
-        <div class="post-meta flex flex-row items-baseline gap-2 text-xs font-ui text-muted-foreground">
+        <div class="post-meta flex flex-row items-baseline gap-2 text-meta font-ui text-muted-foreground">
           <PostMeta post={post} showReadingTime />
         </div>
       </div>

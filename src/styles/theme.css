@@ -66,8 +66,23 @@
   --color-primary             : var(--primary);
   --color-primary-foreground  : var(--primary-foreground);
   
-  --font-content              : var(--font-lipi-serif);
+  /* Two faces, nothing else. `--font-content` and `--font-annotation` stay as
+     names because the components reference them, but they resolve to the same
+     sans as the UI — there is no serif and no handwriting face on this site. */
+  --font-content              : var(--font-lipi-sans);
   --font-ui                   : var(--font-lipi-sans);
+  --font-annotation           : var(--font-lipi-sans);
   --font-code                 : var(--font-lipi-mono);
-  --font-annotation           : var(--font-lipi-hand);
+
+  /* One type scale, five steps. Anything that wants a sixth is wrong.
+       meta   captions, tags, timestamps
+       ui     nav, buttons, secondary text
+       body   running text
+       lead   section headings, post titles in lists
+       title  the one h1 per page */
+  --text-meta                 : 0.8125rem;
+  --text-ui                   : 0.9375rem;
+  --text-body                 : 1.0625rem;
+  --text-lead                 : 1.375rem;
+  --text-title                : 1.875rem;
 }

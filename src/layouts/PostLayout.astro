@@ -1,4 +1,5 @@
 ---
+import type { MarkdownHeading } from "astro";
 import { getAssetPath } from "@/utils/url";
 import siteConfig from "@/site.config";
 import BaseLayout from "@/layouts/BaseLayout.astro";
@@ -17,18 +18,21 @@ import Footer from "@/components/Footer.astro";
 import SectionHeader from "@/components/SectionHeader.astro";
 import ImageWrapper from "@/components/ImageWrapper.astro";
 import PostGallery from "@/components/content/PostGallery.astro";
+import TableOfContents from "@/components/content/TableOfContents.astro";
 import GalleryInit from "@/components/GalleryInit.astro";
 
 type Props = {
   post: Post;
   prevPost?: Post | null;
   nextPost?: Post | null;
+  headings?: MarkdownHeading[];
 };
 
 const {
   post,
   prevPost,
   nextPost,
+  headings = [],
 } = Astro.props;
 
 function formatDate(date: Date) {
@@ -73,7 +77,7 @@ const galleryImages = getGalleryImages(post.filePath ?? '');
     <header class="space-y-4">
       <!-- Title -->
       <h1 
-          class="text-3xl leading-tight tracking-tight font-medium md:text-4xl mb-2 text-balance"
+          class="text-title leading-tight tracking-tight font-medium md:text-title mb-2 text-balance"
           transition:name={slugify(post.data.title.replaceAll(".", "-"))}
       >
           {post.data.title}
@@ -82,14 +86,14 @@ const galleryImages = getGalleryImages(post.filePath ?? '');
       <!-- Description -->
       {
         post.data.description && (
-          <p class="max-w-xl text-base text-prettyfont-content italic font-light leading-relaxed text-muted-foreground">
+          <p class="max-w-xl text-body text-pretty italic font-light leading-relaxed text-muted-foreground">
             {post.data.description}
           </p>
         )
       }
       
       <!-- Metadata -->
-      <div class="post-meta flex flex-row items-baseline gap-2 mb-3 text-xs font-ui text-muted-foreground">
+      <div class="post-meta flex flex-row items-baseline gap-2 mb-3 text-meta font-ui text-muted-foreground">
         <PostMeta post={post} accentCategory showReadingTime />
       </div>
       <div class="divider" />
@@ -125,7 +129,7 @@ const galleryImages = getGalleryImages(post.filePath ?? '');
 
     {/* Post annotation — document-level context, posts only, no footer fallback */}
     {post.data.annotation && (
-      <span class="font-annotation block text-primary max-w-70 md:max-w-80 mt-4 text-xl md:text-2xl -rotate-1 leading-snug">
+      <span class="block text-muted-foreground max-w-80 mt-4 text-ui leading-relaxed">
         {post.data.annotation}
       </span>
     )}
@@ -140,7 +144,7 @@ const galleryImages = getGalleryImages(post.filePath ?? '');
               (tag) => (
                 <a
                   href={getAssetPath(`/tags/${slugify(tag)}`)}
-                  class="text-sm underline font-ui text-muted-foreground link-hover"
+                  class="text-ui underline font-ui text-muted-foreground link-hover"
                 >
                   {tag}
                 </a>
@@ -170,6 +174,7 @@ const galleryImages = getGalleryImages(post.filePath ?? '');
     )}
   </Fragment>
   <Fragment slot="scripts">
+    <TableOfContents headings={headings} />
     <ReadingProgress />
     <GalleryInit />
   </Fragment>

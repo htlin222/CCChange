@@ -48,39 +48,41 @@ export default defineConfig({
     },
   },
 
+  // Two families, two weights each. The template shipped four families
+  // (Manrope / Literata / Fira Code / Caveat) across 22 webfont files, which is
+  // a lot of bytes for a text site that only ever needed sans and mono.
+  //
+  // Neither family covers CJK, so Traditional Chinese falls through to the
+  // platform face listed in `fallbacks`. That is deliberate: a CJK webfont is
+  // multiple megabytes, and the system faces here are good.
   fonts: [
     {
       name: "Manrope",
       cssVariable: "--font-lipi-sans",
       provider: fontProviders.fontsource(),
-      weights: [300, 400, 500, 600, 700],
-      fallbacks: ["sans-serif"],
-      formats: ["woff", "ttf"],
-    },
-    {
-      name: "Literata",
-      cssVariable: "--font-lipi-serif",
-      provider: fontProviders.fontsource(),
-      weights: [300, 400, 500, 600, 700],
-      fallbacks: ["serif"],
-      formats: ["woff", "ttf"],
+      weights: [400, 600],
+      fallbacks: [
+        "PingFang TC",
+        "Noto Sans TC",
+        "Microsoft JhengHei",
+        "system-ui",
+        "sans-serif",
+      ],
+      formats: ["woff"],
     },
     {
       name: "Fira Code",
       cssVariable: "--font-lipi-mono",
       provider: fontProviders.fontsource(),
-      weights: [ 400, 500, 600, 700],
-      fallbacks: ["monospace"],
-      formats: ["woff", "ttf"],
+      weights: [400, 600],
+      fallbacks: [
+        "ui-monospace",
+        "SFMono-Regular",
+        "Menlo",
+        "monospace",
+      ],
+      formats: ["woff"],
     },
-    {
-      name: "Caveat",
-      cssVariable: "--font-lipi-hand",
-      provider: fontProviders.fontsource(),
-      weights: [ 400, 500, 600, 700],
-      fallbacks: ["serif"],
-      formats: ["woff", "ttf"],
-    }
   ],
   
   vite: {
