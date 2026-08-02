@@ -2,8 +2,14 @@
 
 每日一則 Claude Code changelog 中文講義，由 Claude Code 自己出刊。
 
-**站台**：https://htlin222.github.io/CCChange/
+### 👉 https://htlin222.github.io/CCChange/
 
+[![Site](https://img.shields.io/badge/site-htlin222.github.io%2FCCChange-0b7285)](https://htlin222.github.io/CCChange/)
+[![CI](https://github.com/htlin222/CCChange/actions/workflows/ci.yml/badge.svg)](https://github.com/htlin222/CCChange/actions/workflows/ci.yml)
+[![Deploy](https://github.com/htlin222/CCChange/actions/workflows/deploy.yml/badge.svg)](https://github.com/htlin222/CCChange/actions/workflows/deploy.yml)
+[![RSS](https://img.shields.io/badge/RSS-feed-f97316)](https://htlin222.github.io/CCChange/rss.xml)
+
+出刊時間：每天 **08:00（Asia/Taipei）**。
 版面使用 [Lipi](https://github.com/thelocalhoststudio/lipi) —— The Localhost Studio 的 typography-first Astro 模板。
 
 ---

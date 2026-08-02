@@ -1,5 +1,10 @@
 import siteConfig from "@/site.config";
 import { type Post, type Page, getPostUrl } from "./content";
+import { absoluteUrl } from "./url";
+
+// siteConfig.url is the bare origin; the site is served from a base path, so
+// every schema URL has to go through absoluteUrl() or it points at a 404.
+const siteUrl = absoluteUrl("/", siteConfig.url);
 
 export function generateWebsiteSchema() {
   return {
@@ -7,7 +12,7 @@ export function generateWebsiteSchema() {
     "@type": "WebSite",
     name: siteConfig.title,
     description: siteConfig.description,
-    url: siteConfig.url,
+    url: siteUrl,
   };
 }
 
@@ -44,14 +49,11 @@ export function generateAboutSchema(
     "@type": "AboutPage",
     name: page.data.title,
     description: page.data.description,
-    url: new URL(
-      "/about",
-      siteConfig.url
-    ).toString(),
+    url: absoluteUrl("/about", siteConfig.url),
     isPartOf: {
       "@type": "WebSite",
       name: siteConfig.title,
-      url: siteConfig.url,
+      url: siteUrl,
     },
     author: {
       "@type": "Person",
