@@ -77,6 +77,49 @@ for (const file of html) {
   }
 }
 
+// JSON-LD carries its own absolute URLs, which the href/src scan above never
+// sees. They were silently pointing at the origin without the base — a 404 for
+// anything that follows structured data.
+for (const file of html) {
+  const rel = relative(DIST, file);
+  const source = readFileSync(file, "utf8");
+
+  for (const [, block] of source.matchAll(
+    /<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/g,
+  )) {
+    let data;
+    try {
+      data = JSON.parse(block);
+    } catch {
+      errors.push(`${rel}: JSON-LD block is not valid JSON`);
+      continue;
+    }
+
+    const walk = (node, path) => {
+      if (Array.isArray(node)) {
+        node.forEach((v, i) => walk(v, `${path}[${i}]`));
+        return;
+      }
+      if (node && typeof node === "object") {
+        for (const [k, v] of Object.entries(node)) walk(v, `${path}.${k}`);
+        return;
+      }
+      if (typeof node !== "string") return;
+      if (!node.startsWith("https://htlin222.github.io")) return;
+
+      const { pathname } = new URL(node);
+      if (pathname !== `${BASE}/` && !pathname.startsWith(`${BASE}/`)) {
+        errors.push(
+          `${rel}: JSON-LD ${path} = "${node}" is missing the "${BASE}" base — ` +
+            `build it with absoluteUrl() from @/utils/url`,
+        );
+      }
+    };
+
+    walk(data, "$");
+  }
+}
+
 const posts = walk(join(DIST, "posts")).filter((f) => f.endsWith(".html"));
 if (posts.length < 2) {
   // posts/index.html plus at least one real post page
