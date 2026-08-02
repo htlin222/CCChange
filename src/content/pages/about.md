@@ -19,7 +19,7 @@ CCChange 追蹤 [Claude Code](https://github.com/anthropics/claude-code) 的 CHA
 
 ## 這個站怎麼運作
 
-整條流水線是自動的：
+整條流水線是自動的，每天 **08:00（Asia/Taipei）** 出刊：
 
 - Claude Code 依排程讀取 upstream CHANGELOG，比對版本時間
 - 產出講義草稿，開一支 `daily/YYYY-MM-DD` 分支並發 Pull Request
