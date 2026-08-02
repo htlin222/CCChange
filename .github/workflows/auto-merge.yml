@@ -75,10 +75,20 @@ jobs:
           fi
 
           # Re-read the check state at merge time; the workflow_run payload is a
-          # snapshot and other required checks may still be running or red.
-          state=$(gh api "repos/$REPO/commits/$HEAD_SHA/status" --jq '.state')
-          if [ "$state" = "failure" ] || [ "$state" = "error" ]; then
-            fail "combined commit status is '$state'"
+          # snapshot and a sibling workflow may have gone red since.
+          #
+          # This must use the check-runs API, not /commits/{sha}/status: GitHub
+          # Actions reports as check runs, and the combined-status endpoint
+          # returns state=pending with total_count=0 for a commit whose only
+          # checks are Actions — which would make this gate a no-op.
+          bad=$(gh api "repos/$REPO/commits/$HEAD_SHA/check-runs" --paginate \
+                  --jq '[.check_runs[]
+                         | select(.status == "completed")
+                         | select(.conclusion
+                             | IN("failure","cancelled","timed_out","action_required"))
+                         | .name] | join(", ")')
+          if [ -n "$bad" ]; then
+            fail "these checks did not pass: $bad"
           fi
 
           gh pr merge "$pr" --repo "$REPO" --squash --delete-branch
