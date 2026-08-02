@@ -18,6 +18,8 @@ approval, and never open a PR whose checks you have not run yourself.
   manufacture news.
 - **Label every claim's provenance**: 官方文件 / 社群 / 本機實測.
 - **Run `pnpm test` before the PR.** A red PR is worse than no PR.
+- **Run the humanizer pass.** Step 6 is not optional. A post that reads like a
+  changelog summariser wrote it has failed even if every fact is right.
 
 ## Step 1 — Freshness check
 
@@ -103,15 +105,42 @@ Structure, in this order:
    Each: 精神 (what class of problem it solves) → 一手證據 → 社群 → 對工作流的
    幫助 **and where it does not help** → 實務痛點的例子.
 5. **嘻嘻的部分** — the genuinely funny or surprising findings. Real ones only.
-6. **誠實的判決** — a table with a 🟢/🟡/🟠 call per feature and a concrete
-   "你該做什麼", then the single most honest sentence about the release.
+6. **誠實的判決** — a table rating each feature 值得/可以/略過 in plain words
+   (no emoji) with a concrete "你該做什麼", then say what you actually think.
 7. **參考來源** — every URL used.
 
 Write in Traditional Chinese. Keep code identifiers, settings keys, and CLI
 flags in their original form. Never pad; if a feature is boring, one line is the
 correct length.
 
-## Step 6 — Verify locally
+## Step 6 — De-slop the draft (mandatory)
+
+Load `humanizer-zh-tw` (vendored at `.claude/skills/humanizer-zh-tw/SKILL.md`)
+and run the whole draft through it. This is not a polish pass you may skip
+because the draft "reads fine" — the first draft always reads fine to the model
+that wrote it.
+
+The patterns this repo produces most:
+
+- **`——` everywhere.** It is the single loudest tell. Most become a comma or a
+  full stop. Keep one per section at most.
+- **Bold as emphasis spray.** Bold marks a term the reader will look for again,
+  not every clause you thought was important.
+- **Bold-label lists** (`- **稽核**：把…`). Prose them, or drop the labels.
+- **Quotable one-liners** closing a section. If it sounds like a pull quote,
+  cut it.
+- **Emoji in tables and headings.** None.
+- **Rule of three.** Two items or four, not always three.
+- **Identical sentence lengths.** Break the run with a short one.
+
+Then score it on the humanizer's five dimensions. Below 40/50, revise and score
+again. Put nothing in the post about the scoring — it is a working step.
+
+What must survive intact: the verified numbers, the commands, the quoted
+strings, and the honest verdict. De-slopping is about the prose around the
+findings, never the findings.
+
+## Step 7 — Verify locally
 
 ```bash
 pnpm install --frozen-lockfile
@@ -126,7 +155,7 @@ failure mode that only shows up in production. Both must exit 0.
 If you add a component or a link helper, route every internal URL through
 `getAssetPath()` from `@/utils/url`.
 
-## Step 7 — Branch, commit, PR
+## Step 8 — Branch, commit, PR
 
 ```bash
 git checkout -b daily/$(date +%Y-%m-%d)
