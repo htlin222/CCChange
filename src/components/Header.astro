@@ -25,7 +25,7 @@ function isActive(url: string) {
             class="h-8 w-auto"
           />
         ) : (
-          <span class="text-foreground font-ui text-2xl font-semibold tracking-tight">
+          <span class="text-foreground font-ui text-lead font-semibold tracking-tight">
             {siteConfig.title}
           </span>
         )
@@ -34,7 +34,7 @@ function isActive(url: string) {
 
     <div class="nav-right flex flex-row items-center gap-4 ">
       <!-- Desktop Navigation -->
-      <nav class="hidden sm:flex items-center gap-6 font-ui text-sm">
+      <nav class="hidden sm:flex items-center gap-6 font-ui text-ui">
         {
           siteConfig.navigation.map((item) => (
             <a
@@ -96,7 +96,7 @@ function isActive(url: string) {
           <a
             href={getAssetPath(item.url)}
             class="flex items-center justify-between px-4 py-3.5 border-b border-border 
-              font-ui text-base text-muted-foreground link-hover aria-[current=page]:text-primary
+              font-ui text-body text-muted-foreground link-hover aria-[current=page]:text-primary
               last:border-b-0"
             aria-current={isActive(item.url) ? "page" : undefined}
           >

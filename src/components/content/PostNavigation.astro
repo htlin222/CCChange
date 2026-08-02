@@ -15,7 +15,7 @@ const { prevPost, nextPost } = Astro.props;
     {/* GLOBAL PREV / NEXT */}
     {(prevPost || nextPost) && (
       <div class:list={[
-	        "post-nav flex flex-row flex-wrap gap-4 text-sm",
+	        "post-nav flex flex-row flex-wrap gap-4 text-ui",
           {
             "md:justify-between": !(prevPost && nextPost),
           }
@@ -31,7 +31,7 @@ const { prevPost, nextPost } = Astro.props;
               <div class="flex items-center justify-start gap-2 group inline-cta text-muted-foreground">
                 Previous Article
               </div>
-              <span class="text-base md:text-lg font font-medium font-content leading-snug text-foreground link-hover">
+              <span class="text-body md:text-body font font-medium font-content leading-snug text-foreground link-hover">
                 {prevPost.data.title}
               </span>
             </a>
@@ -48,7 +48,7 @@ const { prevPost, nextPost } = Astro.props;
               <div class="flex items-center justify-end gap-2 group inline-cta text-muted-foreground">
                 Next Article
               </div>  
-              <span class="text-base md:text-lg font-medium font-content leading-snug text-foreground link-hover">
+              <span class="text-body md:text-body font-medium font-content leading-snug text-foreground link-hover">
                 {nextPost.data.title}
               </span>
             </a>

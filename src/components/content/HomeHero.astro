@@ -9,7 +9,7 @@ const Content = homeEntry ? (await render(homeEntry)).Content : null;
 ---
 <section class="home-hero flex flex-col pt-8 sm:pt-12" data-pagefind-ignore>
   {variant === "studio" ? (
-    <p class="font-content italic text-3xl sm:text-4xl max-w-xl leading-snug tracking-tight wrap-break-word text-foreground">
+    <p class="font-content italic text-title sm:text-title max-w-xl leading-snug tracking-tight wrap-break-word text-foreground">
       {siteConfig.description}
     </p>
     <div class="h-px bg-border mt-8" />

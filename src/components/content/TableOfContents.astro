@@ -1,0 +1,178 @@
+---
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+
+// h1 belongs to the page title, and h4+ is noise in a rail this narrow.
+// rehypeAutolinkHeadings appends a "↗" anchor into each heading before Astro
+// collects `headings`, so the arrow rides along in `text` — strip it.
+const items = headings
+  .filter((h) => h.depth === 2 || h.depth === 3)
+  .map((h) => ({ ...h, text: h.text.replace(/\s*↗\s*$/, "") }));
+---
+
+{
+  items.length > 2 && (
+    <nav class="toc-rail" aria-label="目錄" data-toc>
+      <p class="toc-heading">目錄</p>
+      <ol class="toc-list">
+        {items.map((h) => (
+          <li class:list={["toc-item", h.depth === 3 && "toc-item-sub"]}>
+            <a href={`#${h.slug}`} data-toc-link={h.slug}>
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+<style>
+  /* The content column is max-w-2xl (42rem) centred. Park the rail in the
+     gutter to its left and only show it when that gutter is actually wide
+     enough — below 1280px there is nowhere for it to go. */
+  .toc-rail {
+    position: fixed;
+    top: 8rem;
+    /* Content column is max-w-2xl (42rem) centred; park the rail in the gutter
+       to its left, but never let it touch the window edge. */
+    left: max(1.5rem, calc(50% - 21rem - 14.5rem));
+    width: 12.5rem;
+    max-height: calc(100vh - 12rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    z-index: 10;
+  }
+
+  /* 42rem column + 2 × 14.5rem gutter = 71rem. Below that the rail would crowd
+     the text, so it is simply not shown — the heading anchors still work. */
+  @media (max-width: 71rem) {
+    .toc-rail {
+      display: none;
+    }
+  }
+
+  .toc-heading {
+    font-family: var(--font-code);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    margin-bottom: 0.75rem;
+  }
+
+  .toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--border);
+  }
+
+  .toc-item a {
+    display: block;
+    padding: 0.3rem 0 0.3rem 0.75rem;
+    margin-left: -1px;
+    border-left: 1px solid transparent;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--muted-foreground);
+    text-decoration: none;
+    transition:
+      color 0.2s,
+      border-color 0.2s;
+  }
+
+  .toc-item-sub a {
+    padding-left: 1.5rem;
+    font-size: 0.75rem;
+  }
+
+  .toc-item a:hover {
+    color: var(--foreground);
+  }
+
+  .toc-item a[aria-current="true"] {
+    color: var(--primary);
+    border-left-color: var(--primary);
+  }
+
+  .toc-rail::-webkit-scrollbar {
+    width: 2px;
+  }
+
+  .toc-rail::-webkit-scrollbar-thumb {
+    background: var(--border);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toc-item a {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  function initToc() {
+    const rail = document.querySelector<HTMLElement>("[data-toc]");
+    if (!rail) return;
+
+    const links = new Map<string, HTMLAnchorElement>();
+    for (const a of rail.querySelectorAll<HTMLAnchorElement>("[data-toc-link]")) {
+      links.set(a.dataset.tocLink!, a);
+    }
+
+    const targets = [...links.keys()]
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (targets.length === 0) return;
+
+    // Track which headings are above the fold rather than which are visible:
+    // with a long section on screen no heading intersects at all, and a
+    // visibility-only observer would leave nothing marked.
+    const above = new Set<string>();
+
+    const mark = () => {
+      let current: string | null = null;
+      for (const el of targets) {
+        if (above.has(el.id)) current = el.id;
+      }
+      current ??= targets[0].id;
+
+      for (const [id, a] of links) {
+        if (id === current) a.setAttribute("aria-current", "true");
+        else a.removeAttribute("aria-current");
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.boundingClientRect.top < 0 && !entry.isIntersecting) {
+            above.add(entry.target.id);
+          } else {
+            above.delete(entry.target.id);
+          }
+        }
+        mark();
+      },
+      { rootMargin: "0px 0px -70% 0px", threshold: 0 },
+    );
+
+    for (const el of targets) observer.observe(el);
+    mark();
+
+    document.addEventListener(
+      "astro:before-swap",
+      () => observer.disconnect(),
+      { once: true },
+    );
+  }
+
+  initToc();
+  document.addEventListener("astro:after-swap", initToc);
+</script>

@@ -34,7 +34,7 @@ const { images, galleryId, title = 'Gallery' } = Astro.props;
 <section class="post-gallery" data-pagefind-ignore aria-label={title}>
   <div class="post-gallery__header flex items-baseline gap-3 mb-4">
     <SectionHeader title='Gallery' />
-    <span class="post-gallery__count font-code text-sm tabular-nums text-muted-foreground">{images.length} photo{images.length !== 1 ? 's' : ''}</span>
+    <span class="post-gallery__count font-code text-ui tabular-nums text-muted-foreground">{images.length} photo{images.length !== 1 ? 's' : ''}</span>
   </div>
 
   <div class="gallery-grid">
