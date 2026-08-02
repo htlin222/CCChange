@@ -30,8 +30,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-          # Accounts whose daily-post PRs may merge without a human.
-          ALLOWED_AUTHORS: htlin222 app/github-actions
+          # Accounts always accepted by name. The association check below is
+          # what normally passes a PR; this is a fallback for identities that
+          # report an unexpected association.
+          ALLOWED_AUTHORS: htlin222
           REQUIRED_LABEL: claude-daily
         run: |
           set -euo pipefail
@@ -45,12 +47,13 @@ jobs:
 
           gh api "repos/$REPO/pulls/$pr" > pr.json
           author=$(jq -r '.user.login' pr.json)
+          assoc=$(jq -r '.author_association' pr.json)
           is_fork=$(jq -r '.head.repo.full_name != .base.repo.full_name' pr.json)
           base=$(jq -r '.base.ref' pr.json)
           draft=$(jq -r '.draft' pr.json)
           labels=$(jq -r '[.labels[].name] | join(" ")' pr.json)
 
-          echo "PR #$pr by $author -> $base (fork=$is_fork draft=$draft labels='$labels')"
+          echo "PR #$pr by $author ($assoc) -> $base (fork=$is_fork draft=$draft labels='$labels')"
 
           fail() { echo "::notice::Not auto-merging PR #$pr: $1"; exit 0; }
 
@@ -59,9 +62,23 @@ jobs:
           [ "$is_fork" = "false" ]        || fail "PR comes from a fork"
           [ "$draft" = "false" ]          || fail "PR is a draft"
           [ "$base" = "main" ]            || fail "base branch is '$base', not main"
-          case " $ALLOWED_AUTHORS " in
-            *" $author "*) ;;
-            *) fail "author '$author' is not in the allowlist" ;;
+
+          # The scheduled cloud agent opens its PR under whatever identity its
+          # runtime holds, which is not knowable in advance. Pinning a login
+          # here would silently strand the daily post.
+          #
+          # Since fork PRs are already rejected above, the branch could only
+          # have been pushed by someone with write access to this repo, so
+          # author_association is the honest check. The login allowlist stays
+          # as a fallback for identities that report an odd association.
+          case "$assoc" in
+            OWNER|MEMBER|COLLABORATOR) ;;
+            *)
+              case " $ALLOWED_AUTHORS " in
+                *" $author "*) ;;
+                *) fail "author '$author' has association '$assoc' and is not in the allowlist" ;;
+              esac
+              ;;
           esac
           case " $labels " in
             *" $REQUIRED_LABEL "*) ;;
