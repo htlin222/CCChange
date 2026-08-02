@@ -12,6 +12,8 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  # Needed to dispatch deploy.yml after merging — see the final step.
+  actions: write
 
 jobs:
   auto-merge:
@@ -93,3 +95,14 @@ jobs:
 
           gh pr merge "$pr" --repo "$REPO" --squash --delete-branch
           echo "::notice::Auto-merged PR #$pr"
+
+          # GitHub suppresses `push` events produced with GITHUB_TOKEN so that a
+          # workflow cannot trigger itself in a loop. That guard also means the
+          # merge commit this job just created will NOT start deploy.yml, and
+          # the site would silently keep serving the previous build.
+          #
+          # workflow_dispatch is the documented exception to the suppression, so
+          # dispatch the deploy explicitly. Requires `actions: write` above and
+          # a `workflow_dispatch` trigger in deploy.yml.
+          gh workflow run deploy.yml --repo "$REPO" --ref main
+          echo "::notice::Dispatched deploy.yml for main"
