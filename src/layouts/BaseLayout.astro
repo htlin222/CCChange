@@ -1,0 +1,57 @@
+---
+import Head from '@/components/Head.astro';
+import Header from '@/components/Header.astro';
+import Footer from "@/components/Footer.astro";
+import ScrollToTop from "@/components/ScrollToTop.astro";
+import HeadingAnchors from '@/scripts/HeadingAnchors.astro';
+
+interface Props {
+  lang?: string;
+  schema?: Record<string, unknown>;
+}
+
+const { lang = "zh-Hant", schema } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang={lang}> 
+  <Head schema={schema}>
+    <slot name="seo" slot="seo" />
+    <slot name="head" slot="head" />
+  </Head>
+  <body class="font-content bg-background text-foreground selection:bg-selection">
+
+    <Header />
+    <!-- Main content -->
+    <main class="app-layout flex flex-col space-y-8 sm:space-y-10">
+      
+
+      {/* Page/Post Header Section */}
+      <slot name="header" />
+
+      {/* Page/Post Meta Section */}
+      <slot name="meta" />
+
+      {/* Page/Post Content */}
+      <slot />
+
+      {/* Post Navigation */}
+      <slot name="navigation" />
+
+      {/* Additional Content */}
+      <slot name="after" />
+
+    </main>
+
+    <slot name="footer" />
+    <!-- <Footer /> -->
+    <ScrollToTop />
+    
+    <!-- Additional page-specific scripts -->
+    <slot name="scripts" />
+    <HeadingAnchors />
+    <script>
+      import "@/scripts/theme";
+    </script>
+    <pagefind-modal></pagefind-modal>
+  </body>
+</html>

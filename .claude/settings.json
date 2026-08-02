@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install)",
+      "Bash(pnpm install --frozen-lockfile)",
+      "Bash(pnpm build)",
+      "Bash(pnpm test)",
+      "Bash(pnpm test:content)",
+      "Bash(pnpm test:build)",
+      "Bash(pnpm lint)",
+      "Bash(node scripts/check-content.mjs)",
+      "Bash(node scripts/check-build.mjs)",
+      "Bash(npm view @anthropic-ai/claude-code time --json)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(gh api repos/anthropics/claude-code:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "WebFetch(domain:code.claude.com)",
+      "WebFetch(domain:platform.claude.com)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "WebSearch"
+    ],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(gh pr merge:*)",
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+---
+import { render } from "astro:content";
+import PostLayout from "@/layouts/PostLayout.astro";
+import { type Post, getAllPosts, getPostSlug, getPostUrl, getAdjacentPosts } from "@/utils/content";
+
+export const getStaticPaths = async () => {
+  const posts = await getAllPosts();
+
+  return posts.map((post) => {
+    const { prevPost, nextPost } =
+      getAdjacentPosts(posts, post);
+
+    return {
+      params: {
+        slug: getPostSlug(
+          post.id,
+          post.filePath
+        ),
+      },
+
+      props: {
+        post,
+        prevPost,
+        nextPost,
+      },
+    };
+  });
+};
+
+type Props = {
+  post: Post;
+  prevPost: Post | null;
+  nextPost: Post | null;
+};
+
+const {
+  post,
+  prevPost,
+  nextPost,
+} = Astro.props;
+
+const { Content } = await render(post);
+---
+<PostLayout
+  post={post}
+  prevPost={prevPost}
+  nextPost={nextPost}
+>
+  <Content />
+</PostLayout>

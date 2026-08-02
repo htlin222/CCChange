@@ -1,0 +1,12 @@
+# pnpm 10 blocks postinstall scripts unless a package is listed here.
+# CI installs non-interactively, so this list is the whole approval.
+# `sharp` is deliberately absent: no prebuilt binary resolves for this toolchain
+# and building from source only produces a noisy failure. Astro's image
+# optimiser is unused here (OG images go through satori + @resvg/resvg-js), so
+# the build is green without it — keep it that way so CI matches local.
+onlyBuiltDependencies:
+  - '@biomejs/biome'
+  - '@resvg/resvg-js'
+  - esbuild
+  - lightningcss
+  - pagefind

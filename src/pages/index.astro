@@ -1,0 +1,29 @@
+---
+import siteConfig from '@/site.config';
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SEO from "@/components/SEO.astro";
+import { getAllPosts } from "@/utils/content";
+import HomeHero from "@/components/content/HomeHero.astro";
+import { generateWebsiteSchema } from "@/utils/schema";
+import FeaturedPost from '@/components/content/FeaturedPost.astro';
+import RecentPosts from '@/components/content/RecentPosts.astro';
+import Footer from '@/components/Footer.astro';
+
+const allPosts = await getAllPosts();
+const structuredData = generateWebsiteSchema();
+---
+<BaseLayout schema={structuredData}>
+	<SEO slot="seo" title="Home" description={siteConfig.description} ogImage="/og/default.png" />
+	<h1 class="sr-only">{siteConfig.title}</h1>
+	
+	<HomeHero />
+	<!-- <MastHead /> -->
+	<FeaturedPost post={allPosts[0]} />
+	<RecentPosts posts={allPosts.slice(1, siteConfig.recentPosts)} sectionTitle="Recent" />
+	<Fragment slot="footer">
+    <Footer
+			meta='Built for readers, writers, and unfinished drafts.'
+			annotation={siteConfig.annotation}
+		/>
+  </Fragment>
+</BaseLayout>

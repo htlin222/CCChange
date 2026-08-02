@@ -1,0 +1,81 @@
+---
+import { Font } from 'astro:assets';
+import { ClientRouter } from "astro:transitions";
+import { getAssetPath } from "@/utils/url";
+import "@/styles/global.css";
+
+interface Props {
+  lang?: string;
+  schema?: Record<string, unknown>;
+}
+
+const { lang = "zh-Hant", schema } = Astro.props;
+---
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="generator" content={Astro.generator} />
+  
+  <!-- Filled at runtime by theme.ts to match the current background colour -->
+  <meta name="theme-color" content="" />
+
+  <link rel="icon" href={getAssetPath("/favicon.ico")} type="image/svg+xml" />
+  <link rel="sitemap" href={getAssetPath("/sitemap-index.xml")} />
+  <link rel="alternate" type="application/rss+xml" title="RSS Feed" href={getAssetPath("/rss.xml")} />
+
+	  <!-- SEO injected per layout -->
+  <slot name="seo" />
+  {
+    schema && (
+      <script 
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(schema)}
+      />
+    )
+  }
+  <!-- Additional per-page head tags -->
+  <slot name="head" />
+
+	  <!-- Theme init runs before body renders to prevent FOUC -->
+  <script is:inline>
+    (() => {
+      try {
+        const stored =
+          localStorage.getItem("theme");
+
+        const theme = stored
+          ? stored
+          : window.matchMedia(
+              "(prefers-color-scheme: dark)"
+            ).matches
+            ? "dark"
+            : "light";
+
+        document.documentElement.setAttribute("data-theme", theme);
+        document.documentElement.setAttribute('data-pf-theme', theme);
+        document.documentElement.style.colorScheme = theme;
+
+        window.__theme = { value: theme, };
+      } catch (_) {}
+    })();
+  </script>
+  
+  <link
+    href={getAssetPath("/pagefind/pagefind-component-ui.css")}
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href={getAssetPath("/src/styles/pagefind.css")} />
+
+  <script
+    src={getAssetPath("/pagefind/pagefind-component-ui.js")}
+    type="module"
+  ></script>
+
+  <Font cssVariable="--font-lipi-sans" preload />
+  <Font cssVariable="--font-lipi-serif" preload />
+  <Font cssVariable="--font-lipi-mono" preload />
+  <Font cssVariable="--font-lipi-hand" preload />
+
+  <ClientRouter />
+</head>

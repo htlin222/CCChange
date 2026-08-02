@@ -1,0 +1,86 @@
+---
+import { getAssetPath } from "@/utils/url";
+import HomeIcon from "@/assets/home.svg"
+
+const pathname = Astro.url.pathname;
+
+const segments = pathname
+  .split("/")
+  .filter(Boolean);
+
+const breadcrumbs = segments.map(
+  (segment, index) => {
+    const href =
+      "/" +
+      segments
+        .slice(0, index + 1)
+        .join("/");
+
+    const label = decodeURIComponent(
+      segment
+    )
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (char) =>
+        char.toUpperCase()
+      );
+
+    return {
+      label,
+      href,
+    };
+  }
+);
+---
+
+{
+  breadcrumbs.length > 0 && (
+    <nav
+      aria-label="Breadcrumb"
+      class="text-muted-foreground flex flex-wrap items-center gap-2 text-xs font-ui my-8"
+    >
+      <a
+        href={getAssetPath("/")}
+        class="flex gap-1 items-center hover:text-foreground transition-colors"
+      >
+        <HomeIcon class="text-muted-forground size-4"/>
+        Home
+      </a>
+
+      {breadcrumbs.map(
+        (crumb, index) => {
+          const isLast =
+            index ===
+            breadcrumbs.length - 1;
+
+          return (
+            <>
+              <span
+                aria-hidden="true"
+                class="text-border"
+              >
+                /
+              </span>
+
+              {isLast ? (
+                <span
+                  aria-current="page"
+                  class="text-primary max-w-[30ch] truncate"
+                  title={crumb.label}
+                >
+                  {crumb.label}
+                </span>
+              ) : (
+                <a
+                  href={crumb.href}
+                  class="hover:text-foreground transition-colors"
+                >
+                  {crumb.label}
+                </a>
+              )}
+            </>
+          );
+        }
+      )}
+    </nav>
+  )
+}

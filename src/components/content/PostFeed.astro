@@ -1,0 +1,73 @@
+---
+// PostFeed.astro
+import { type Post } from "@/utils/content";
+import SectionHeader from "@/components/SectionHeader.astro";
+import PostTitle from "./PostTitle.astro";
+import PostMeta from "./PostMeta.astro";
+
+type Props = {
+  posts: Post[];
+  sectionTitle?: string;
+  sectionDesc?: string;
+};
+
+const {
+  posts,
+  sectionTitle,
+  sectionDesc,
+} = Astro.props;
+
+// Group posts by year, preserving descending order within each group
+const postsByYear = posts.reduce<Record<number, Post[]>>((acc, post) => {
+  const year = (post.data.updated ?? post.data.published).getFullYear();
+  (acc[year] ??= []).push(post);
+  return acc;
+}, {});
+
+// Years descending
+const years = Object.keys(postsByYear)
+  .map(Number)
+  .sort((a, b) => b - a);
+---
+
+<section>
+  {
+    sectionTitle && <SectionHeader title={sectionTitle} subheading={sectionDesc} />
+  }
+  
+  {years.map((year) => {
+    const yearPosts = postsByYear[year];
+
+    return (
+      <div class="mb-6 last:mb-0">
+
+        {/* Year header */}
+        <div class="flex items-baseline justify-between py-2 mb-4 border-border/50 border-b">
+          <span class="text-base tracking-[0.12em] uppercase italic text-muted-foreground">
+            {year}
+          </span>
+          <span class="font-code text-sm tabular-nums text-muted-foreground">
+            {yearPosts.length} {yearPosts.length === 1 ? "writing" : "writings"}
+          </span>
+        </div>
+
+        {/* Posts in this year */}
+        {yearPosts.map((post) => (
+          <div class="flex flex-col space-y-3 py-4 group hover:translate-x-2 transition-transform ease-fluid">
+            <PostTitle post={post} 
+              class="text-lg md:text-xl font-medium text-balance leading-snug link-hover"/>
+            {post.data.description && (
+              <p class="text-sm italic leading-normal text-muted-foreground md:max-w-xl">
+                {post.data.description}
+              </p>
+            )}
+            <div class="post-meta flex flex-row items-baseline gap-2 text-xs text-muted-foreground">
+              <PostMeta post={post} accentCategory showReadingTime />
+            </div>
+          </div>
+        ))}
+
+      </div>
+    );
+  })}
+</section>

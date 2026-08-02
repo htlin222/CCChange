@@ -1,0 +1,60 @@
+---
+import { type Post, getPostUrl } from "@/utils/content";
+import ArrowLeft from "@/assets/arrow-left.svg";
+import ArrowRight from "@/assets/arrow-right.svg";
+
+interface Props {
+  prevPost?: Post;
+  nextPost?: Post;
+}
+
+const { prevPost, nextPost } = Astro.props;
+---
+<section class="flex flex-col">
+  <nav class="post-navigation my-2" aria-label="Post navigation">
+    {/* GLOBAL PREV / NEXT */}
+    {(prevPost || nextPost) && (
+      <div class:list={[
+	        "post-nav flex flex-row flex-wrap gap-4 text-sm",
+          {
+            "md:justify-between": !(prevPost && nextPost),
+          }
+        ]}>
+          {prevPost && (
+            <a
+              href={getPostUrl(
+                  prevPost.id,
+                  prevPost.filePath
+                )}
+	              class="group flex flex-1 flex-col gap-1 no-underline transition-colors"
+            >
+              <div class="flex items-center justify-start gap-2 group inline-cta text-muted-foreground">
+                Previous Article
+              </div>
+              <span class="text-base md:text-lg font font-medium font-content leading-snug text-foreground link-hover">
+                {prevPost.data.title}
+              </span>
+            </a>
+          )}
+
+          {nextPost && (
+            <a
+              href={getPostUrl(
+                  nextPost.id,
+                  nextPost.filePath
+                )}
+	              class="group flex flex-1 flex-col gap-1 text-right no-underline transition-colors"
+            >
+              <div class="flex items-center justify-end gap-2 group inline-cta text-muted-foreground">
+                Next Article
+              </div>  
+              <span class="text-base md:text-lg font-medium font-content leading-snug text-foreground link-hover">
+                {nextPost.data.title}
+              </span>
+            </a>
+          )}
+      </div>
+    )}
+  </nav>
+  <div class="divider" />
+</section>

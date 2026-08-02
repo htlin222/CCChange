@@ -1,0 +1,22 @@
+---
+interface Props {
+  title?: string;
+  subheading?: string;
+  class?: string;
+}
+
+const { title, subheading, class: className = "" } = Astro.props;
+---
+
+<div class:list={["flex flex-col gap-2", {className}]}>
+  {title && (
+    <span class="font-code text-sm font-medium uppercase tracking-[0.15em] text-muted-foreground">
+      {title}
+    </span>
+  )}
+  {subheading && (
+    <p class="max-w-xl text-sm leading-relaxed text-muted-foreground">
+      {subheading}
+    </p>
+  )}
+</div>

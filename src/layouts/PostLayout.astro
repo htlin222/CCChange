@@ -1,0 +1,181 @@
+---
+import { getAssetPath } from "@/utils/url";
+import siteConfig from "@/site.config";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { type Post, getPostSlug, getAllPosts, getRelatedPosts } from "@/utils/content";
+import { slugify } from "@/utils/text";
+import { getCoverImage, getGalleryImages } from "@/utils/image";
+import Breadcrumb from "@/components/Breadcrumb.astro";
+import ReadingProgress from "@/components/ReadingProgress.astro";
+import SharePost from "@/components/content/SharePost.astro";
+import SEO from "@/components/SEO.astro";
+import PostNavigation from "@/components/content/PostNavigation.astro";
+import { generatePostSchema } from "@/utils/schema";
+import PostMeta from "@/components/content/PostMeta.astro";
+import RelatedPosts from "@/components/content/RelatedPosts.astro";
+import Footer from "@/components/Footer.astro";
+import SectionHeader from "@/components/SectionHeader.astro";
+import ImageWrapper from "@/components/ImageWrapper.astro";
+import PostGallery from "@/components/content/PostGallery.astro";
+import GalleryInit from "@/components/GalleryInit.astro";
+
+type Props = {
+  post: Post;
+  prevPost?: Post | null;
+  nextPost?: Post | null;
+};
+
+const {
+  post,
+  prevPost,
+  nextPost,
+} = Astro.props;
+
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date);
+}
+
+function formatMonthYear(date: Date) {
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "long",
+  })
+    .format(date)
+    .toUpperCase();
+}
+const { title, description, cover, published, tags } = post.data;
+
+const allPosts    = await getAllPosts();
+const relatedPosts = getRelatedPosts(post, allPosts, siteConfig.relatedPosts);
+const ogImage = `/og/posts/${getPostSlug(post.id, post.filePath)}.png`;
+const structuredData = generatePostSchema(post);
+const coverImage = getCoverImage(cover);
+const galleryImages = getGalleryImages(post.filePath ?? '');
+---
+
+<BaseLayout schema={structuredData}>
+  <SEO
+    slot="seo"
+    {title}
+    description={description ?? ""}
+    type="article"
+    publishedTime={published}
+    {tags}
+    {ogImage}
+  />
+  <Fragment slot="header">
+    <Breadcrumb />
+    <!-- Post Header -->
+    <header class="space-y-4">
+      <!-- Title -->
+      <h1 
+          class="text-3xl leading-tight tracking-tight font-medium md:text-4xl mb-2 text-balance"
+          transition:name={slugify(post.data.title.replaceAll(".", "-"))}
+      >
+          {post.data.title}
+      </h1>
+
+      <!-- Description -->
+      {
+        post.data.description && (
+          <p class="max-w-xl text-base text-prettyfont-content italic font-light leading-relaxed text-muted-foreground">
+            {post.data.description}
+          </p>
+        )
+      }
+      
+      <!-- Metadata -->
+      <div class="post-meta flex flex-row items-baseline gap-2 mb-3 text-xs font-ui text-muted-foreground">
+        <PostMeta post={post} accentCategory showReadingTime />
+      </div>
+      <div class="divider" />
+    </header>
+  </Fragment>
+
+  <section>
+    <!-- Cover -->
+    {coverImage && (
+      <section class="breakout overflow-hidden rounded-sm ring ring-border shadow-sm">
+        <ImageWrapper src={coverImage} alt={title} class="block w-full h-auto" fetchPriority="high" />
+      </section>
+    )}
+
+    <!-- Post Content -->
+    <article data-pagefind-body class="post-content flex flex-col space-y-2">
+      <meta data-pagefind-meta="title[content]" content={title} />
+      <meta data-pagefind-sort="date[content]" content={published.toISOString()} />
+	    <meta data-pagefind-filter="collection[content]" content={post.collection} />
+      {tags?.map((tag) => (
+        <meta data-pagefind-filter="tag[content]" content={tag} />
+      ))}
+      <!-- Rendered markdown -->
+	    <div class="app-prose post-content">
+	      <slot />
+        <hr />
+	    </div>
+      <!-- Galley -->
+      {galleryImages.length > 0 && (
+        <PostGallery images={galleryImages} galleryId={post.id} />
+      )}
+	  </article>
+
+    {/* Post annotation — document-level context, posts only, no footer fallback */}
+    {post.data.annotation && (
+      <span class="font-annotation block text-primary max-w-70 md:max-w-80 mt-4 text-xl md:text-2xl -rotate-1 leading-snug">
+        {post.data.annotation}
+      </span>
+    )}
+
+    <!-- Tags -->
+    {
+      post.data.tags &&
+        post.data.tags.length > 0 && (
+          <div class="flex flex-wrap items-baseline gap-3">
+            <SectionHeader title="filed under" />
+            {post.data.tags.map(
+              (tag) => (
+                <a
+                  href={getAssetPath(`/tags/${slugify(tag)}`)}
+                  class="text-sm underline font-ui text-muted-foreground link-hover"
+                >
+                  {tag}
+                </a>
+              )
+            )}
+          </div>
+        )
+    }
+    <SharePost title={post.data.title} />
+    <div class="divider" />
+  </section>
+  
+  <Fragment slot="navigation">
+    <PostNavigation
+      prevPost={prevPost}
+      nextPost={nextPost}
+    />
+  </Fragment>
+  <Fragment slot="after">
+    {relatedPosts.length > 0 && (
+      // <PostFeed
+      //   posts={relatedPosts}
+      //   variant="timeline"
+      //   sectionTitle="Related Reading"
+      // />
+      <RelatedPosts posts={relatedPosts} sectionTitle="More like this"/>
+    )}
+  </Fragment>
+  <Fragment slot="scripts">
+    <ReadingProgress />
+    <GalleryInit />
+  </Fragment>
+
+  <Fragment slot="footer">
+    <Footer />
+  </Fragment>
+  
+</BaseLayout>

@@ -1,0 +1,31 @@
+---
+import { getPostUrl, type Post } from "@/utils/content";
+import { slugify } from "@/utils/text";
+
+type Props = {
+  tag?: 'h1' | 'h2';
+  post: Post;
+  class?: string;
+};
+
+const {
+  tag: Heading = "h2",
+  post,
+  class: className = "",
+} = Astro.props;
+
+const url = getPostUrl(post.id, post.filePath);
+const titleSlug = slugify(post.data.title.replaceAll(".", "-"));
+const titleClass = [ "text-balance", className,]
+  .filter(Boolean)
+  .join(" ");
+---
+
+<a
+  href={url}
+  class="no-underline hover:text-primary"
+>
+  <Heading class={titleClass} transition:name={titleSlug}>
+    {post.data.title}
+  </Heading>
+</a>

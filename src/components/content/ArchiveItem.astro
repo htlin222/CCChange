@@ -1,0 +1,23 @@
+---
+import { type Post } from "@/utils/content";
+import PostTitle from "./PostTitle.astro";
+import PostMeta from "./PostMeta.astro";
+
+type Props = {
+  post: Post;
+};
+
+const { post } = Astro.props;
+---
+
+<div class="flex flex-row items-baseline justify-between py-1 first:pt-0 gap-x-3 text-muted-foreground">
+  <PostTitle 
+    post={post} 
+    class="text-base md:text-lg font-medium text-balance leading-snug text-foreground 
+    transition-colors duration-150 hover:text-primary hover:translate-x-2 transition-transform ease-fluid"
+  />
+
+  <div class="flex flex-row shrink-0 gap-3 text-xs font-ui text-right">
+    <PostMeta post={post} />
+  </div>
+</div>

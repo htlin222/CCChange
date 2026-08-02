@@ -1,0 +1,44 @@
+---
+import type { Post } from "@/utils/content";
+import PostFeedTitle from "./PostFeedTitle.astro";
+import PostFeedMeta from "./PostFeedMeta.astro";
+
+type Props = {
+  posts: Post[];
+};
+
+const { posts } = Astro.props;
+---
+
+<ul class="archive-list list-none p-0 m-0">
+  {posts.map((post) => (
+    <li class="archive-item p-4">
+      <PostFeedTitle
+        post={post}
+        class="font-content text-lg leading-snug font-medium"
+      />
+
+      <PostFeedMeta
+        post={post}
+        showLanguage
+      />
+    </li>
+  ))}
+</ul>
+
+<style>
+
+  @media (min-width: 640px) {
+    .archive-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: baseline;
+      gap: 2rem;
+    }
+
+    .archive-item .post-meta {
+      justify-content: flex-end;
+      white-space: nowrap;
+    }
+  }
+</style>
