@@ -1,0 +1,30 @@
+/* ==========================================================================
+   Pagefind — Theme Overrides
+   ========================================================================== */
+:root,
+html[data-pf-theme="dark"] {
+  --pf-text: var(--foreground);
+  --pf-text-secondary: var(--muted-foreground);
+  --pf-text-muted: var(--muted-foreground);
+  --pf-background: var(--muted);
+  --pf-border: var(--border);
+  --pf-border-focus: var(--primary);
+  --pf-hover: var(--muted);
+  --pf-mark: var(--foreground);
+  --pf-scroll-shadow: rgba(0, 0, 0, 0.08);
+  --pf-border-radius: 6px;
+}
+
+:root,
+html[data-pf-theme="light"] {
+  --pf-text: var(--foreground);
+  --pf-text-secondary: var(--muted-foreground);
+  --pf-text-muted: var(--muted-foreground);
+  --pf-background: var(--background);
+  --pf-border: var(--border);
+  --pf-border-focus: var(--primary);
+  --pf-hover: var(--muted);
+  --pf-mark: var(--foreground);
+  --pf-scroll-shadow: rgba(0, 0, 0, 0.08);
+  --pf-border-radius: 6px;
+}

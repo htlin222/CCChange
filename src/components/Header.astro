@@ -1,0 +1,201 @@
+---
+import siteConfig from "@/site.config";
+import { getAssetPath } from "@/utils/url";
+
+const pathname = Astro.url.pathname;
+
+function isActive(url: string) {
+  if (url === "/") {
+    return pathname === "/";
+  }
+
+  return pathname.startsWith(url);
+}
+---
+
+<header class="site-header sticky overflow-visible top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+  <div class="app-layout flex min-h-16 items-center justify-between py-3">
+    <!-- Logo / Title -->
+    <a href={getAssetPath("/")} class="flex items-center gap-3">
+      {
+        siteConfig.showLogo && siteConfig.logo ? (
+          <img
+            src={getAssetPath(siteConfig.logo)}
+            alt={siteConfig.title}
+            class="h-8 w-auto"
+          />
+        ) : (
+          <span class="text-foreground font-ui text-2xl font-semibold tracking-tight">
+            {siteConfig.title}
+          </span>
+        )
+      }
+    </a>
+
+    <div class="nav-right flex flex-row items-center gap-4 ">
+      <!-- Desktop Navigation -->
+      <nav class="hidden sm:flex items-center gap-6 font-ui text-sm">
+        {
+          siteConfig.navigation.map((item) => (
+            <a
+              href={getAssetPath(item.url)}
+              class="nav-link link-hover tracking-wide"
+              aria-current={isActive(item.url) ? "page" : undefined}
+            >
+              {item.title}
+            </a>
+          ))
+        }
+      </nav>
+      
+      <!-- Vertical divider, desktop only -->
+      <div class="hidden sm:block h-3.5 w-px bg-border shrink-0 mx-1" aria-hidden="true"></div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-4 font-ui">
+        <!-- <pagefind-modal-trigger compact hide-shortcut></pagefind-modal-trigger> -->
+        <!-- <pagefind-searchbox></pagefind-searchbox> -->
+        {
+          siteConfig.showThemeToggle && (
+            <button
+              type="button"
+              id="theme-toggle"
+              class="theme-pill"
+              aria-label="Toggle theme"
+            />
+          )
+        }
+
+        <!-- Mobile menu toggle -->
+        <button
+          id="menu-toggle"
+          type="button"
+          class="sm:hidden inline-flex h-8 w-8 items-center justify-center rounded border border-border bg-transparent text-muted-foreground hover:text-primary transition-colors duration-150"
+          aria-label="Toggle navigation"
+          aria-expanded="false"
+          aria-controls="mobile-drawer"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+            <line x1="1" y1="3.5" x2="13" y2="3.5" />
+            <line x1="1" y1="7" x2="13" y2="7" />
+            <line x1="1" y1="10.5" x2="13" y2="10.5" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- Mobile Drawer -->
+  <div
+    id="mobile-drawer"
+    class="mobile-drawer sm:hidden"
+    aria-hidden="true"
+  >
+    <div class="border-t border-border">
+      {
+        siteConfig.navigation.map((item) => (
+          <a
+            href={getAssetPath(item.url)}
+            class="flex items-center justify-between px-4 py-3.5 border-b border-border 
+              font-ui text-base text-muted-foreground link-hover aria-[current=page]:text-primary
+              last:border-b-0"
+            aria-current={isActive(item.url) ? "page" : undefined}
+          >
+            <span>{item.title}</span>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</header>
+
+<script>
+  function initMobileNav() {
+    const toggle = document.getElementById('menu-toggle');
+    const drawer = document.getElementById('mobile-drawer');
+    if (!toggle || !drawer) return;
+
+    toggle.addEventListener('click', () => {
+      const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+      const next = !isOpen;
+      toggle.setAttribute('aria-expanded', String(next));
+      drawer.classList.toggle('open', next);
+      drawer.setAttribute('aria-hidden', String(!next));
+    });
+  }
+
+  initMobileNav();
+  document.addEventListener('astro:after-swap', initMobileNav);
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+
+    animation: header-shadow linear both;
+    animation-timeline: scroll();
+    animation-range: 0px 1px;
+  }
+
+  @keyframes header-shadow {
+    from { box-shadow: none; }
+    to {
+      box-shadow:
+        0 1px 12px 0
+        color-mix(in srgb, var(--foreground) 8%, transparent);
+    }
+  }
+
+  /* ── Theme pill ────────────────────────────────────── */
+  .theme-pill {
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    border: 0.5px solid var(--border);
+    background: var(--muted);
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .theme-pill::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--foreground);
+    border: 0.5px solid var(--muted-foreground);
+    transition: transform 0.18s ease, background 0.18s;
+  }
+
+  [data-theme="dark"] .theme-pill {
+    background: var(--muted-foreground);
+    border-color: var(--muted-foreground);
+  }
+
+  html[data-theme="dark"] .theme-pill::after {
+  /* [data-theme="dark"] .theme-pill::after { */
+    transform: translateX(16px);
+    background: var(--foreground);
+  }
+
+  /* ── Mobile drawer ─────────────────────────────────── */
+  .mobile-drawer {
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+    box-shadow:
+      0 4pt 24pt
+      color-mix(in srgb, var(--foreground) 5%, transparent);
+    /* box-shadow: 0 4pt 24pt rgba(0,0,0,0.05); */
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+  }
+
+  .mobile-drawer.open {
+    max-height: 400px;
+  }
+
+</style>

@@ -1,0 +1,242 @@
+@plugin "@tailwindcss/typography";
+
+@layer base {
+  /* =========================================
+     Editorial Typography
+     ========================================= */
+
+  .app-prose {
+    @apply prose max-w-none text-base;
+  }
+
+  .app-prose :where(p) {
+    @apply mt-6;
+  }
+
+  /* =========================================
+     Headings
+     ========================================= */
+
+  .app-prose :where(h1, h2, h3, h4, h5, h6) {
+    @apply text-foreground scroll-mt-24 tracking-tight font-light;
+    margin-top: 1em;
+  }
+
+  .app-prose :where(h1) {
+    @apply text-3xl leading-tight font-medium;
+  }
+
+  .app-prose :where(h2) {
+    @apply text-2xl leading-tight font-normal;
+  }
+
+  .app-prose :where(h3) {
+    @apply text-xl leading-snug;
+  }
+
+  .app-prose :where(h4) {
+    @apply text-lg;
+  }
+
+  /* =========================================
+     Body Content
+     ========================================= */
+
+  .app-prose :where(p, ul, ol, table) {
+    @apply text-foreground leading-relaxed;
+  }
+
+  .app-prose :where(strong) {
+    @apply text-foreground font-semibold;
+  }
+
+  .app-prose :where(em) {
+    @apply text-foreground/90;
+  }
+
+  /* =========================================
+     Links
+     ========================================= */
+
+  .app-prose :where(a) {
+    @apply text-foreground decoration-border underline underline-offset-4 transition-colors hover:text-primary hover:decoration-accent;
+  }
+
+  /* =========================================
+     Lists
+     ========================================= */
+
+  .app-prose :where(ul, ol) {
+    @apply ps-5;
+  }
+
+  .app-prose :where(li)::marker {
+    @apply text-muted-foreground;
+  }
+
+  /* =========================================
+     Horizontal Rule
+     ========================================= */
+
+  .app-prose :where(hr) {
+    @apply h-px border-0 m-12;
+    background: linear-gradient(90deg,transparent,var(--color-accent) 20%,var(--color-accent) 80%,transparent);
+  }
+
+  /* =========================================
+     Images
+     ========================================= */
+
+  .app-prose :where(img) {
+    @apply rounded-sm;    
+    margin-block: 0;
+  }
+
+  html[data-theme="dark"] .app-prose :where(img) {
+    outline-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .app-prose :where(figcaption) {
+    @apply text-muted-foreground mt-3 text-center text-sm;
+  }
+
+  /* =========================================
+     Inline Code
+     ========================================= */
+
+  .app-prose :where(code):not(pre code) {
+    @apply bg-accent border border-border font-code text-accent-foreground rounded p-0.5 text-xs before:content-none after:content-none;
+  }
+
+  /* =========================================
+     Code Blocks
+     ========================================= */
+
+  .app-prose :where(pre) {
+    @apply overflow-x-auto;
+    font-size: 0.750rem;
+  }
+
+  .app-prose :where(pre):focus-visible {
+    @apply outline-accent outline-2 outline-dashed;
+  }
+
+  .astro-code {
+    @apply font-code flex bg-accent text-(--shiki-light) [&_span]:text-(--shiki-light);
+  }
+
+  html[data-theme="dark"] .astro-code {
+    @apply bg-accent text-(--shiki-dark) [&_span]:text-(--shiki-dark);
+  }
+
+  .astro-code code {
+    @apply flex-[1_0_100%] bg-transparent p-0 text-inherit;
+  }
+
+  /* =========================================
+     Shiki Transformers
+     ========================================= */
+
+  .astro-code .line.highlighted {
+    @apply inline-block w-full bg-white/5;
+  }
+
+  .astro-code .line.diff.add {
+    @apply relative inline-block w-full bg-green-500/10 before:absolute before:-left-3 before:text-green-500 before:content-['+'];
+  }
+
+  .astro-code .line.diff.remove {
+    @apply relative inline-block w-full bg-red-500/10 before:absolute before:-left-3 before:text-red-500 before:content-['-'];
+  }
+
+  .astro-code .highlighted-word {
+    @apply border-border rounded border px-1;
+  }
+
+  /* =========================================
+     Blockquotes
+     ========================================= */
+
+  .app-prose :where(blockquote) {
+    @apply border-primary border-s-2 ps-5 my-6;
+    quotes: "\201C" "\201D" "\2018" "\2019";
+  }
+  
+  .app-prose :where(blockquote) p {
+    @apply text-base leading-relaxed text-muted-foreground;
+  }
+
+  /* Attribution / cite inside blockquote */
+  .app-prose :where(blockquote cite),
+  .app-prose :where(blockquote p:last-child:not(:first-child)) {
+    @apply not-italic text-xs text-muted-foreground mt-2 block;
+  }
+  
+  .app-prose :where(blockquote cite)::before {
+    content: "— ";
+  }
+  
+  
+  /* ── Pullquote ────────────────────────────────────────────────
+    A highlighted passage — larger, centred register,
+    top and bottom rules only, no left rule.
+    Applied via: <blockquote class="pullquote">
+  ──────────────────────────────────────────────────────────── */
+  .app-prose :where(blockquote.pullquote) {
+    @apply border-s-0 ps-0 my-10 mx-0 not-italic text-center text-muted-foreground;
+    @apply border-t border-b border-border py-6;
+  }
+  
+  .app-prose :where(blockquote.pullquote) p {
+    @apply text-xl md:text-2xl font-medium leading-snug tracking-[-0.01em] text-foreground;
+  }
+  
+  /* Attribution inside pullquote */
+  .app-prose :where(blockquote.pullquote cite) {
+    @apply text-xs text-muted-foreground italic mt-3 block not-italic;
+  }
+  
+  .app-prose :where(blockquote.pullquote cite)::before {
+    content: "— ";
+  }
+
+  /* =========================================
+     Tables
+     ========================================= */
+
+  .app-prose :where(table) {
+    @apply border-border w-full table-auto border-collapse border text-sm;
+  }
+
+  .app-prose :where(th, td) {
+    @apply border-border border px-3 py-2;
+  }
+
+  .app-prose :where(th) {
+    @apply bg-muted/50 text-foreground text-left font-medium;
+  }
+
+  /* =========================================
+     Details / Summary
+     ========================================= */
+
+  .app-prose :where(details) {
+    @apply border-border rounded-xl border p-4;
+  }
+
+  .app-prose :where(summary) {
+    @apply cursor-pointer font-medium;
+  }
+
+  .app-prose :where(summary):focus-visible {
+    @apply outline-accent outline-2 outline-dashed outline-offset-4;
+  }
+
+  @media (min-width: 768px) {
+    .post-content > p:first-of-type::first-letter {
+      @apply text-primary font-content font-semibold;
+      initial-letter: 3;
+      margin-inline-end: 0.25em;
+    }
+  }
+}

@@ -1,0 +1,73 @@
+/* Base Tokens - only change these */
+:root {
+  --base-50:  #F5F4ED;
+  --base-100: #ECEAE2;
+  --base-200: #DDDAD1;
+  --base-300: #C7C3B9;
+  --base-400: #A9A499;
+  --base-500: #8A867C;
+  --base-600: #6E6A62;
+  --base-700: #56534D;
+  --base-800: #3F3D39;
+  --base-900: #252523;
+  --base-950: #141413;
+  --brand:    #E85D2A;
+}
+
+/* Light theme values */
+:root {
+  color-scheme: light;
+
+  --background          : var(--base-50);
+  --foreground          : var(--base-900);
+  --card                : var(--base-100);
+  --card-foreground     : var(--base-700);
+  --muted               : var(--base-200);
+  --muted-foreground    : var(--base-500);
+  --border              : var(--base-300);
+  --accent              : var(--base-200);
+  --accent-foreground   : var(--base-900);
+  --ring                : var(--brand);
+  --primary             : var(--brand);
+  --primary-foreground  : #FFFFFF;
+}
+
+/* Dark theme values */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --background          : var(--base-950);
+  --foreground          : var(--base-100);
+  --card                : var(--base-900);
+  --card-foreground     : var(--base-200);
+  --muted               : var(--base-800);
+  --muted-foreground    : var(--base-500);
+  --border              : var(--base-700);
+  --accent              : var(--base-800);
+  --accent-foreground   : var(--base-100);
+  --ring                : var(--brand);
+  --primary             : var(--brand);
+  --primary-foreground  : #FFFFFF;
+}
+
+
+@theme inline {
+
+  --color-background          : var(--background);
+  --color-foreground          : var(--foreground);
+  --color-card                : var(--card);
+  --color-card-foreground     : var(--card-foreground);
+  --color-muted               : var(--muted);
+  --color-muted-foreground    : var(--muted-foreground);
+  --color-border              : var(--border);
+  --color-accent              : var(--accent);
+  --color-accent-foreground   : var(--accent-foreground);
+  --color-ring                : var(--ring);
+  --color-primary             : var(--primary);
+  --color-primary-foreground  : var(--primary-foreground);
+  
+  --font-content              : var(--font-lipi-serif);
+  --font-ui                   : var(--font-lipi-sans);
+  --font-code                 : var(--font-lipi-mono);
+  --font-annotation           : var(--font-lipi-hand);
+}

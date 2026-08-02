@@ -1,0 +1,35 @@
+---
+import PageLayout from "@/layouts/PageLayout.astro";
+import { getAssetPath } from "@/utils/url";
+---
+
+<PageLayout
+  title="Page not found"
+  description="The page you were looking for is not here."
+  noindex
+>
+  <div class="space-y-6">
+    <p class="text-muted-foreground">
+      The page may have moved, or the address may have been written differently.
+    </p>
+
+    <nav
+      aria-label="Not found links"
+      class="flex flex-wrap gap-x-5 gap-y-2 font-ui text-sm"
+    >
+      <a
+        href={getAssetPath("/")}
+        class="nav-link"
+      >
+        Home
+      </a>
+
+      <a
+        href={getAssetPath("/archive")}
+        class="nav-link"
+      >
+        Archive
+      </a>
+    </nav>
+  </div>
+</PageLayout>

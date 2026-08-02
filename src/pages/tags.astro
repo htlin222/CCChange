@@ -1,0 +1,50 @@
+---
+import PageLayout from "@/layouts/PageLayout.astro";
+import { getAllTagArchives } from "@/utils/content";
+import { getAssetPath } from "@/utils/url";
+import { titleify, slugify } from "@/utils/text";
+
+const tagArchives = await getAllTagArchives();
+export function getTagTransitionName(
+  tag: string
+) {
+  return `tag-${slugify(
+    tag.replaceAll(".", "-")
+  )}`;
+}
+---
+
+<PageLayout
+  title="Tags"
+  description="Browse posts by tag."
+>
+  {
+    tagArchives.length > 0 ? (
+      <ul class="grid gap-x-10 gap-y-3 sm:grid-cols-2">
+        {tagArchives.map((archive) => (
+          <li>
+            <a
+              href={getAssetPath(`tags/${archive.slug}`)}
+              class="group border-border flex items-baseline justify-between gap-6 border-b py-3"
+            >
+              <span 
+                class="group-hover:text-primary font-content text-xl transition-colors"
+                transition:name={getTagTransitionName(archive.tag)}
+              >
+                {titleify(archive.tag)}
+              </span>
+
+              <span class="text-muted-foreground shrink-0 text-sm font-code uppercase tabular-nums">
+                {archive.count} {archive.count === 1 ? "post" : "posts"}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="text-muted-foreground">
+        No tags have been published yet.
+      </p>
+    )
+  }
+</PageLayout>

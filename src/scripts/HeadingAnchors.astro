@@ -1,0 +1,46 @@
+---
+
+---
+<script is:inline>
+  document.addEventListener(
+  "click",
+  async (event) => {
+    const target = event.target;
+
+    if (
+      target instanceof HTMLAnchorElement &&
+      target.classList.contains(
+        "heading-anchor"
+      )
+    ) {
+      event.preventDefault();
+
+      const url = new URL(
+        target.href
+      );
+
+      try {
+        await navigator.clipboard.writeText(
+          url.toString()
+        );
+
+        const original =
+          target.textContent;
+
+        target.textContent = "✓";
+
+        setTimeout(() => {
+          target.textContent =
+            original;
+        }, 2000);
+
+        history.replaceState(
+          null,
+          "",
+          url.hash
+        );
+      } catch (_) {}
+    }
+  }
+);
+</script>

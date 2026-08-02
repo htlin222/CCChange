@@ -1,0 +1,334 @@
+---
+import PageLayout from "@/layouts/PageLayout.astro";
+import { getAllPosts, type Post } from "@/utils/content";
+import ArchiveItem from "@/components/content/ArchiveItem.astro";
+
+const allPosts = await getAllPosts();
+
+// Unique tags for filter bar, sorted alphabetically
+const allTags = [
+  ...new Set(allPosts.flatMap((p) => p.data.tags ?? [])),
+].sort();
+
+// Group posts by year, descending
+const yearMap = new Map<number, Post[]>();
+for (const post of allPosts) {
+  const year = post.data.published.getFullYear();
+  if (!yearMap.has(year)) yearMap.set(year, []);
+  yearMap.get(year)!.push(post);
+}
+const years = [...yearMap.keys()].sort((a, b) => b - a);
+
+const INITIAL_PER_YEAR = 10;
+
+function formatDay(date: Date) {
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "2-digit",
+  })
+    .format(date)
+    .toUpperCase();
+}
+---
+
+<PageLayout title="Archive" description="A chronological archive of all writings">
+  <!-- Filter bar -->
+  <div
+    class="archive-controls mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+    data-pagefind-ignore
+  >
+    <input
+      id="archive-search"
+      type="search"
+      placeholder="Search titles..."
+      class="w-full sm:w-72 rounded border border-border bg-background px-3 py-2 text-sm"
+    />
+
+    <label
+      class="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer"
+    >
+      <input
+        id="english-only"
+        type="checkbox"
+        class="accent-primary"
+      />
+      <span>English only</span>
+    </label>
+  </div>
+  <nav
+    id="archive-filters"
+    class="mb-10 flex flex-wrap gap-x-4 gap-y-2 font-ui"
+    aria-label="Filter writings by tag"
+    data-pagefind-ignore
+  >
+    <button class="filter-link text-sm text-muted-foreground cursor-pointer link-hover is-active" data-filter="all" type="button"
+      >all</button
+    >
+    {allTags.map((tag) => (
+      <button 
+        class="relative filter-link text-sm text-muted-foreground cursor-pointer link-hover" 
+        data-filter={tag} 
+        type="button">
+        {tag}
+      </button>
+    ))}
+  </nav>
+
+  <!-- Archive root -->
+  <div id="archive-root" data-pagefind-ignore>
+    {years.map((year) => {
+      const posts = yearMap.get(year)!;
+      const hasMore = posts.length > INITIAL_PER_YEAR;
+      const extraCount = Math.max(0, posts.length - INITIAL_PER_YEAR);
+
+      return (
+        <section
+          class="year-section mb-14"
+          data-year={String(year)}
+          aria-label={`${year}`}
+        >
+          <!-- Year header -->
+          <div class="border-b pb-2 mb-4 flex items-baseline justify-between">
+            <span class="font-code text-md font-medium uppercase tracking-widest text-muted-foreground">
+              {year}
+            </span>
+            <span class="font-code text-sm tabular-nums text-muted-foreground">
+              <span class="count-display">{posts.length}</span>&thinsp;writings
+            </span>
+          </div>
+          <div class="mb-2" aria-hidden="true" />
+
+          <!-- Post list -->
+          <ul>
+            {posts.map((post, index) => {
+              const tags = (post.data.tags ?? []).join(" ");
+              const isInitiallyHidden = index >= INITIAL_PER_YEAR;
+              return (
+                <li
+                  class="archive-item py-1"
+                  data-tags={tags}
+                  data-title={post.data.title.toLowerCase()}
+                  data-lang={post.data.lang ?? "en"}
+                  hidden={isInitiallyHidden}
+                >
+                  <ArchiveItem post={post} />
+                </li>
+              );
+            })}
+          </ul>
+
+          <!-- Show more (hidden until JS evaluates; only rendered when needed) -->
+          {hasMore && (
+            <button
+              class="show-more-btn text-sm text-muted-foreground cursor-pointer link-hover mt-1"
+              type="button"
+              data-year={String(year)}
+            >
+              Show {extraCount} more from {year} ↓
+            </button>
+          )}
+        </section>
+      );
+    })}
+  </div>
+</PageLayout>
+
+<style>
+  /* ── Filter bar ──────────────────────────────── */
+
+  .filter-link::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: width 0.2s ease;
+  }
+
+  .filter-link.is-active {
+    color: var(--color-primary);
+    font-weight: 500;
+    font-style: italic;
+  }
+
+  .filter-link.is-active::after {
+    width: 100%;
+  }
+
+  .filter-link:hover:not(.is-active) {
+    color: var(--color-primary);  
+  }
+
+  /* ── Mobile: date above title, no columns ────── */
+
+  @media (max-width: 640px) {
+
+  .archive-controls input[type="search"] {
+    outline: none;
+  }
+
+  .archive-controls input[type="search"]:focus {
+    border-color: var(--accent);
+  }
+</style>
+
+<script>
+  const INITIAL_PER_YEAR = 10;
+
+  function initArchive() {
+    const filterLinks =
+      document.querySelectorAll<HTMLButtonElement>(".filter-link");
+    const yearSections =
+      document.querySelectorAll<HTMLElement>(".year-section");
+
+    const expandedYears = new Set<string>();
+    
+    const searchInput =
+      document.getElementById("archive-search");
+
+    searchInput?.addEventListener("input", (e) => {
+      searchQuery = (
+        e.currentTarget as HTMLInputElement
+      ).value
+        .trim()
+        .toLowerCase();
+
+      updateVisibility(activeFilter);
+    });
+
+    const englishToggle = document.getElementById("english-only") as HTMLInputElement | null;
+    let searchQuery = "";
+    let englishOnly = false;
+
+    englishToggle?.addEventListener("change", (e) => {
+      englishOnly = (
+        e.currentTarget as HTMLInputElement
+      ).checked;
+
+      updateVisibility(activeFilter);
+    });
+
+    // Read initial filter from URL
+    const params = new URLSearchParams(window.location.search);
+    let activeFilter = params.get("tag") ?? "all";
+
+    // Apply initial state (handles ?tag= URL on page load)
+    setActiveFilterUI(activeFilter);
+    updateVisibility(activeFilter);
+
+    // Filter clicks
+    filterLinks.forEach((link) => {
+      link.addEventListener("click", () => {
+        const filter = link.dataset.filter ?? "all";
+        if (filter === activeFilter) return;
+
+        activeFilter = filter;
+        expandedYears.clear();
+
+        // Sync URL without navigation
+        const url = new URL(window.location.href);
+        if (filter === "all") {
+          url.searchParams.delete("tag");
+        } else {
+          url.searchParams.set("tag", filter);
+        }
+        history.replaceState(null, "", url.toString());
+
+        setActiveFilterUI(filter);
+        updateVisibility(filter);
+      });
+    });
+
+    // Show-more clicks
+    document
+      .querySelectorAll<HTMLButtonElement>(".show-more-btn")
+      .forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const year = btn.dataset.year ?? "";
+          expandedYears.add(year);
+          updateVisibility(activeFilter);
+        });
+      });
+
+    function setActiveFilterUI(filter: string) {
+      filterLinks.forEach((link) => {
+        link.classList.toggle("is-active", link.dataset.filter === filter);
+      });
+    }
+
+    function matchesFilters(
+      item: HTMLElement,
+      filter: string
+    ): boolean {
+      const tags = item.dataset.tags ?? "";
+      const title = item.dataset.title ?? "";
+      const lang = item.dataset.lang ?? "en";
+
+      const tagMatch =
+        filter === "all" ||
+        tags.split(" ").includes(filter);
+
+      const searchMatch =
+        searchQuery === "" ||
+        title.includes(searchQuery);
+
+      const languageMatch =
+        !englishOnly ||
+        lang === "en";
+
+      return (
+        tagMatch &&
+        searchMatch &&
+        languageMatch
+      );
+    }
+
+    function updateVisibility(filter: string) {
+      yearSections.forEach((section) => {
+        const year = section.dataset.year ?? "";
+        const isExpanded = expandedYears.has(year);
+        const items = [
+          ...section.querySelectorAll<HTMLElement>(".archive-item"),
+        ];
+
+        const matching = items.filter((item) =>
+          matchesFilters(item, filter)
+        );
+        const limit = isExpanded ? matching.length : INITIAL_PER_YEAR;
+
+        // Reset all, then reveal matching items up to limit
+        items.forEach((item) => {
+          item.hidden = true;
+        });
+        matching.slice(0, limit).forEach((item) => {
+          item.hidden = false;
+        });
+
+        // Hide section entirely when no matches
+        section.hidden = matching.length === 0;
+
+        // Update writing count
+        const countEl = section.querySelector(".count-display");
+        if (countEl) countEl.textContent = String(matching.length);
+
+        // Update show-more button
+        const btn = section.querySelector<HTMLButtonElement>(".show-more-btn");
+        if (btn) {
+          const remaining = matching.length - limit;
+          if (remaining > 0) {
+            btn.hidden = false;
+            btn.textContent = `Show ${remaining} more from ${year} ↓`;
+          } else {
+            btn.hidden = true;
+          }
+        }
+      });
+    }
+  }
+
+  // Initialize on load and reinitialize after view transitions
+  initArchive();
+  document.addEventListener("astro:after-swap", initArchive);
+</script>

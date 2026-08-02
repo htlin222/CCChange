@@ -1,0 +1,85 @@
+name: Auto-merge Claude daily posts
+
+# Runs after CI finishes. `workflow_run` executes from the base branch with the
+# repository's own token, so it can merge — but that also means it must not
+# trust anything from the head branch. Everything below is decided from API
+# facts (author, label, fork flag, file paths), never from the PR's contents.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: merge if CI is green and the PR is an authorised daily post
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request'
+    timeout-minutes: 10
+
+    steps:
+      - name: Resolve, gate, and merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          # Accounts whose daily-post PRs may merge without a human.
+          ALLOWED_AUTHORS: htlin222 app/github-actions
+          REQUIRED_LABEL: claude-daily
+        run: |
+          set -euo pipefail
+
+          pr=$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" \
+                 --jq '[.[] | select(.state == "open")][0].number // empty')
+          if [ -z "$pr" ]; then
+            echo "No open PR for $HEAD_SHA — nothing to merge."
+            exit 0
+          fi
+
+          gh api "repos/$REPO/pulls/$pr" > pr.json
+          author=$(jq -r '.user.login' pr.json)
+          is_fork=$(jq -r '.head.repo.full_name != .base.repo.full_name' pr.json)
+          base=$(jq -r '.base.ref' pr.json)
+          draft=$(jq -r '.draft' pr.json)
+          labels=$(jq -r '[.labels[].name] | join(" ")' pr.json)
+
+          echo "PR #$pr by $author -> $base (fork=$is_fork draft=$draft labels='$labels')"
+
+          fail() { echo "::notice::Not auto-merging PR #$pr: $1"; exit 0; }
+
+          # A fork PR would let an outside contributor's branch reach this
+          # write-privileged workflow. Never auto-merge one.
+          [ "$is_fork" = "false" ]        || fail "PR comes from a fork"
+          [ "$draft" = "false" ]          || fail "PR is a draft"
+          [ "$base" = "main" ]            || fail "base branch is '$base', not main"
+          case " $ALLOWED_AUTHORS " in
+            *" $author "*) ;;
+            *) fail "author '$author' is not in the allowlist" ;;
+          esac
+          case " $labels " in
+            *" $REQUIRED_LABEL "*) ;;
+            *) fail "missing required label '$REQUIRED_LABEL'" ;;
+          esac
+
+          # A daily post touches content only. Anything that can change what CI
+          # itself runs — workflows, scripts, build config — needs a human.
+          changed=$(gh api --paginate "repos/$REPO/pulls/$pr/files" --jq '.[].filename')
+          echo "Changed files:"; echo "$changed" | sed 's/^/  /'
+          if echo "$changed" | grep -qvE '^(src/content/|public/)'; then
+            fail "PR touches files outside src/content/ and public/"
+          fi
+
+          # Re-read the check state at merge time; the workflow_run payload is a
+          # snapshot and other required checks may still be running or red.
+          state=$(gh api "repos/$REPO/commits/$HEAD_SHA/status" --jq '.state')
+          if [ "$state" = "failure" ] || [ "$state" = "error" ]; then
+            fail "combined commit status is '$state'"
+          fi
+
+          gh pr merge "$pr" --repo "$REPO" --squash --delete-branch
+          echo "::notice::Auto-merged PR #$pr"

@@ -1,0 +1,33 @@
+---
+import ChevronUp from "@/assets/chevron-up.svg"
+---
+<button
+  id="scroll-to-top" class="scroll-to-top"
+  aria-label="Scroll to top"
+  hidden
+>
+  <ChevronUp class="size-5 text-muted-foreground" />
+</button>
+
+<script>
+  const btn = document.getElementById('scroll-to-top');
+  if (!btn) throw new Error('scroll-to-top button not found');
+
+  // Use IntersectionObserver on a sentinel at page top
+  const sentinel = document.createElement('div');
+  sentinel.style.cssText = 'position:absolute;top:0;left:0;height:1px;width:1px;pointer-events:none;';
+  document.body.prepend(sentinel);
+
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      btn.hidden = entry.isIntersecting;
+    },
+    { threshold: 0, rootMargin: '400px 0px 0px 0px' }
+  );
+
+  observer.observe(sentinel);
+
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>

@@ -1,0 +1,46 @@
+---
+import type { GetStaticPaths } from "astro";
+import PageLayout from "@/layouts/PageLayout.astro";
+import PostFeed from "@/components/content/PostFeed.astro";
+import { getAllTagArchives, type TagArchive } from "@/utils/content";
+import { titleify, slugify } from "@/utils/text";
+
+export const getStaticPaths = (async () => {
+  const tagArchives = await getAllTagArchives();
+
+  return tagArchives.map((archive) => ({
+    params: {
+      tag: archive.slug,
+    },
+    props: {
+      archive,
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+type Props = {
+  archive: TagArchive;
+};
+
+export function getTagTransitionName(
+  tag: string
+) {
+  return `tag-${slugify(
+    tag.replaceAll(".", "-")
+  )}`;
+}
+const { archive } = Astro.props;
+const title = `Tag: ${titleify(archive.tag)}`;
+const description = `Posts tagged "${titleify(archive.tag)}".`;
+---
+
+<PageLayout
+  title={title}
+  description={description}
+  transitionName={getTagTransitionName(archive.tag)}
+>
+  <PostFeed
+    posts={archive.posts}
+  />
+  
+</PageLayout>
