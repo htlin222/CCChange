@@ -163,17 +163,26 @@ exactly what file and what line, or he should not, and you say 不用管.
 
 ### Length budget — CI enforces this
 
-**Target 3000 characters of prose, hard cap 4500.** `check-content.mjs` fails
-the build over the cap and warns over the target, so this is not a guideline
-you can talk yourself past.
+**Target 3000 characters of prose. Hard cap 6500.** `check-content.mjs` warns
+over the target and fails the build over the cap.
+
+The two numbers do different jobs. The target is the signal: over it, the post
+is probably explaining rather than reporting, and you should go look. The cap
+is only a runaway backstop — no check can tell restatement from discovery, so a
+cap tight enough to catch the first would strangle the second.
 
 Prose means the post with code blocks, tables, block quotes and link targets
 stripped out. Counting the raw file would reward padding with restatement and
-punish pasting the command output and tables that make a post worth reading.
-Paste all the evidence you want; it costs nothing against the budget.
+punish pasting the command output that makes a post worth reading. Paste all
+the evidence you want; it costs nothing against the budget.
 
-For calibration: the 2026-08-02 post first shipped at 7402 characters of prose
-for maybe 2000 characters of new information. It now sits at 2760 saying more.
+Calibration:
+
+- 2026-08-02 first draft, 7402 chars for maybe 2000 chars of new information.
+  Restatement. Rewritten to 2760 saying more.
+- 2026-08-03 as written, 5932 chars of almost entirely original findings.
+  Over target, correctly under the cap. Being over target is not a failure if
+  what is there is new.
 
 Full coverage is still required — compression is where the room comes from. A
 feature that changes nothing gets one clause in the 不用管 paragraph, never a

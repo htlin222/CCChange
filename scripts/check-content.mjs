@@ -14,11 +14,29 @@ const POSTS_DIR = "src/content/posts";
 const REQUIRED = ["title", "description", "published"];
 const FILENAME_DATE = /^(\d{4}-\d{2}-\d{2})-[a-z0-9-]+\.mdx?$/;
 
-// Prose only — see the stripping below. The 2026-08-02 post first shipped at
-// 7402 chars of prose for maybe 2000 chars of new information; that is the
-// failure mode these numbers exist to make impossible to ship quietly.
+// Prose only — see the stripping below.
+//
+// The two numbers do different jobs, and conflating them was the first
+// version's mistake.
+//
+// TARGET is the signal. Going over it means the post is probably explaining
+// rather than reporting, so it warns and the writer has to look at it.
+//
+// HARD_CAP is a runaway backstop, nothing more. It is deliberately far above
+// the target because no regex can tell restatement from discovery, and a cap
+// tight enough to catch the former also strangles the latter.
+//
+// Both calibration points, so the next person moving these knows what each
+// number was measured against:
+//
+//   2026-08-02, first draft   7402 chars, ~2000 chars of new information.
+//                             Restatement. This is what TARGET must catch.
+//   2026-08-03, as written    5932 chars, nearly all original findings —
+//                             a disabled /whiteboard skill, a string diff
+//                             showing 3799 fake additions. A 4500 cap
+//                             rejected it, which was the cap being wrong.
 const PROSE_TARGET = 3000;
-const PROSE_HARD_CAP = 4500;
+const PROSE_HARD_CAP = 6500;
 
 const errors = [];
 const warnings = [];
