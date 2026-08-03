@@ -14,6 +14,12 @@ const POSTS_DIR = "src/content/posts";
 const REQUIRED = ["title", "description", "published"];
 const FILENAME_DATE = /^(\d{4}-\d{2}-\d{2})-[a-z0-9-]+\.mdx?$/;
 
+// Prose only — see the stripping below. The 2026-08-02 post first shipped at
+// 7402 chars of prose for maybe 2000 chars of new information; that is the
+// failure mode these numbers exist to make impossible to ship quietly.
+const PROSE_TARGET = 3000;
+const PROSE_HARD_CAP = 4500;
+
 const errors = [];
 const warnings = [];
 
@@ -102,6 +108,54 @@ for (const file of files) {
   }
   if (body.trim().length < 400) {
     warnings.push(`${rel}: body is very short (${body.trim().length} chars)`);
+  }
+
+  // Length budget, measured on prose only. Counting the raw file would reward
+  // padding with restatement and penalise pasting the command output and
+  // tables that make a post worth reading, which is backwards.
+  const proseLength = body
+    .replace(/```[\s\S]*?```/g, "")          // code blocks
+    .replace(/^\|.*$/gm, "")                 // tables
+    .replace(/^>.*$/gm, "")                  // block quotes (pasted docs)
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // link targets, keep the text
+    .replace(/\s+/g, "").length;
+
+  if (proseLength > PROSE_HARD_CAP) {
+    errors.push(
+      `${rel}: ${proseLength} chars of prose exceeds the ${PROSE_HARD_CAP} cap. ` +
+        `Compress a feature that changes nothing into the 不用管 paragraph ` +
+        `instead of giving it a section.`,
+    );
+  } else if (proseLength > PROSE_TARGET) {
+    warnings.push(
+      `${rel}: ${proseLength} chars of prose is over the ${PROSE_TARGET} target`,
+    );
+  }
+
+  // Action-first: the reader must be able to stop after the first screen.
+  if (!/^##\s*今天要動的/m.test(body)) {
+    errors.push(`${rel}: missing a "## 今天要動的" section`);
+  }
+  const firstHeading = body.match(/^##\s*(.+)$/m)?.[1]?.trim();
+  if (firstHeading && !firstHeading.startsWith("今天要動的")) {
+    errors.push(
+      `${rel}: first section is "${firstHeading}", but the action table must come first`,
+    );
+  }
+
+  // Every post ships one experiment: commands, then their real output.
+  const fences = [...body.matchAll(/```(\w*)\n/g)].map((m) => m[1]);
+  if (fences.length < 2) {
+    errors.push(
+      `${rel}: fewer than 2 code blocks — a post must paste the experiment's ` +
+        `commands and their verbatim output`,
+    );
+  }
+
+  // Hedging that the spec bans outright.
+  for (const phrase of ["可以考慮", "這意味著", "對於.{0,8}而言", "所謂的"]) {
+    const m = body.match(new RegExp(phrase));
+    if (m) errors.push(`${rel}: banned phrase "${m[0]}" (see SKILL.md 中文寫作)`);
   }
   for (const [, url] of body.matchAll(/\]\((https?:\/\/[^)\s]+)\)/g)) {
     try {
