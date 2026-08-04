@@ -35,8 +35,29 @@ const FILENAME_DATE = /^(\d{4}-\d{2}-\d{2})-[a-z0-9-]+\.mdx?$/;
 //                             a disabled /whiteboard skill, a string diff
 //                             showing 3799 fake additions. A 4500 cap
 //                             rejected it, which was the cap being wrong.
-const PROSE_TARGET = 3000;
-const PROSE_HARD_CAP = 6500;
+//
+// Both numbers went up by 1500 when the five-section skeleton landed. 痛點 and
+// 好處與官方文件 are prose by nature and did not exist under the old shape, so
+// the old 3000 target would have warned on every conforming post. The
+// target:cap ratio is unchanged.
+const PROSE_TARGET = 4500;
+const PROSE_HARD_CAP = 7500;
+
+// The fixed skeleton. Order matters: a reader who stops after TL;DR must
+// already have the practical value, and 下一步 is useless anywhere but last.
+const REQUIRED_SECTIONS = [
+  "TL;DR",
+  "這解決了什麼痛點",
+  "好處與官方文件",
+  "實測驗證",
+  "下一步",
+];
+
+// 好處與官方文件 has to cite a first-party page. Secondary sources routinely
+// garble settings keys and pricing, which is the whole reason for the rule.
+const OFFICIAL_DOC_HOSTS = /https?:\/\/(code|platform|docs)\.claude\.com\//;
+
+const VERSION_IN_TITLE = /\d+\.\d+\.\d+/;
 
 const errors = [];
 const warnings = [];
@@ -150,14 +171,75 @@ for (const file of files) {
     );
   }
 
-  // Action-first: the reader must be able to stop after the first screen.
-  if (!/^##\s*今天要動的/m.test(body)) {
-    errors.push(`${rel}: missing a "## 今天要動的" section`);
-  }
-  const firstHeading = body.match(/^##\s*(.+)$/m)?.[1]?.trim();
-  if (firstHeading && !firstHeading.startsWith("今天要動的")) {
+  // The title carries the version the post is about. "第九天沒有新版" tells a
+  // reader scrolling the archive nothing about which release it covers.
+  if (fm.title && !VERSION_IN_TITLE.test(fm.title)) {
     errors.push(
-      `${rel}: first section is "${firstHeading}", but the action table must come first`,
+      `${rel}: title "${fm.title}" has no version number — it must name the ` +
+        `release the post is about (e.g. "2.1.221：…")`,
+    );
+  }
+
+  // The fixed five-section skeleton, present and in order.
+  const headings = [...body.matchAll(/^##\s+(.+?)\s*$/gm)].map((m) => m[1]);
+  const foundIndex = REQUIRED_SECTIONS.map((want) =>
+    headings.findIndex((h) => h === want || h.startsWith(`${want}：`)),
+  );
+  const missing = REQUIRED_SECTIONS.filter((_, i) => foundIndex[i] === -1);
+  if (missing.length) {
+    errors.push(
+      `${rel}: missing required section(s) ${missing.map((s) => `"## ${s}"`).join(", ")}. ` +
+        `The skeleton is ${REQUIRED_SECTIONS.join(" → ")} (see SKILL.md 固定骨架)`,
+    );
+  } else {
+    const outOfOrder = foundIndex.some((v, i) => i > 0 && v < foundIndex[i - 1]);
+    if (outOfOrder) {
+      errors.push(
+        `${rel}: sections are out of order (found ${headings.filter((h) => REQUIRED_SECTIONS.some((s) => h === s || h.startsWith(`${s}：`))).join(" → ")}). ` +
+          `Required: ${REQUIRED_SECTIONS.join(" → ")}`,
+      );
+    }
+    if (foundIndex[0] !== 0) {
+      errors.push(
+        `${rel}: first section is "${headings[0]}", but "## TL;DR" must come first`,
+      );
+    }
+  }
+
+  // Slice out a named section's body so the next two checks look only at it.
+  const sectionBody = (name) => {
+    const i = headings.findIndex((h) => h === name || h.startsWith(`${name}：`));
+    if (i === -1) return "";
+    const start = body.indexOf(`## ${headings[i]}`);
+    const nextHeading = headings[i + 1];
+    const end = nextHeading
+      ? body.indexOf(`## ${nextHeading}`, start + 1)
+      : body.length;
+    return body.slice(start, end === -1 ? body.length : end);
+  };
+
+  const benefits = sectionBody("好處與官方文件");
+  if (benefits && !OFFICIAL_DOC_HOSTS.test(benefits)) {
+    errors.push(
+      `${rel}: "好處與官方文件" cites no first-party page — needs at least one ` +
+        `code./platform./docs.claude.com link (say so explicitly if the ` +
+        `feature is undocumented, and link the page that should have covered it)`,
+    );
+  }
+
+  const nextSteps = sectionBody("下一步");
+  if (nextSteps && !/^\s*\d+\.\s+\S/m.test(nextSteps)) {
+    errors.push(
+      `${rel}: "下一步" must be a numbered list of concrete actions, in order`,
+    );
+  }
+
+  // The shape the repo keeps reaching for. Opinions belong next to their
+  // evidence, not bolted on as a closing section.
+  if (/^##+\s*我的看法\s*$/m.test(body)) {
+    errors.push(
+      `${rel}: "我的看法" as its own section is banned — move the position into ` +
+        `實測驗證 or 好處與官方文件, next to the evidence for it`,
     );
   }
 

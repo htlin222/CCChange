@@ -19,7 +19,10 @@ approval, and never open a PR whose checks you have not run yourself.
 - **Label every claim's provenance**: 官方文件 / 社群 / 本機實測.
 - **Every post ships one reproducible experiment.** Reading docs is not the
   product; other summarisers do that for free.
-- **Every feature entry ends in an action or in 不用管.** Never 「可以考慮」.
+- **Every TL;DR row ends in an action or in 不用管.** Never 「可以考慮」.
+- **The five sections are fixed.** TL;DR → 這解決了什麼痛點 → 好處與官方文件 →
+  實測驗證 → 下一步, in that order, with the version number in the title. CI
+  checks all of it.
 - **Run the humanizer pass.** Step 6 is not optional. A post that reads like a
   changelog summariser wrote it has failed even if every fact is right.
 - **Run `pnpm test` before the PR.** A red PR is worse than no PR.
@@ -123,48 +126,86 @@ annotation: "..."                  # optional pull-quote in the margin
 
 ### Who is reading
 
-One person: the author. He already runs Claude Code daily, already maintains a
-global `CLAUDE.md`, `settings.json`, hooks, skills, and this CI pipeline. He is
-not evaluating whether to adopt the tool.
+Someone who uses Claude Code but does not read the changelog. He has a
+`CLAUDE.md` and a `settings.json`; he has not necessarily written a hook, and he
+will not go and look up what `register_repo_root` means before deciding whether
+today's release matters to him.
 
-So: **never explain what Claude Code, a hook, a subagent, or `--print` is.** No
-「這代表 Anthropic 正在把它做成 enterprise runtime」 industry-trend paragraphs;
-he does not care about Anthropic's strategy, he cares what he has to change
-before Thursday. Cut every sentence a reader who already knows all this would
-skim.
+So a term he may not know gets one clause of explanation on first use, in the
+痛點 section where it earns its place, and then you move on. 「`DirectoryAdded`
+是一個 hook 事件，session 中途掛進新目錄時會觸發」 — that much, not a tutorial.
 
-### Action first
+Still banned: the industry-trend paragraph. 「這代表 Anthropic 正在把它做成
+enterprise runtime」 helps nobody decide anything. Every explanatory sentence
+has to be load-bearing for 「這關我什麼事」. If it is background colour, cut it.
 
-The post exists to answer one question per feature: **要不要改東西，改什麼。**
-Everything else is supporting evidence for that answer.
+### 固定骨架 — 五段，順序不能換
 
-So the verdict table goes **first**, not last. A reader who stops after the
-table must already have got the whole value.
+Every post has the same five sections in the same order. CI enforces the titles
+and the order, so do not invent variants. Sub-headings (`###`) inside a section
+are free.
+
+The title carries the version. `title:` must contain the version the post is
+about, then what is actually in it — not a mood, not a pun on its own.
 
 ```markdown
-## 今天要動的
+---
+title: "2.1.221：Artifact 留言自動回覆與 MCP 協定協商"
+---
 
-| 功能 | 你要改什麼 |
-| --- | --- |
-| Opus 5 | 檢查 `max_tokens`：thinking 現在算進去，舊的緊 budget 會被截斷 |
-| `strictAllowlist` | user settings 加 `true`。設在 repo 裡無效 |
+## TL;DR
 
-## 今天不用管的
+| 更新 | 一句話 | 你要動嗎 |
+| --- | --- | --- |
+| Artifact 留言自動回覆 | Claude 會自己回你發佈過的 artifact 底下的留言 | 預設關，去確認 env 沒開 |
+| MCP 協定 `2026-07-28` | 三個 transport 的開關全預設關 | 不用管 |
 
-`workflowSizeGuideline`（想版控 workflow 規模才需要）、巢狀 subagent 轉發、
-`mcp_server_errors`（升級就有，不用做事）。
+## 這解決了什麼痛點
 
-## 判決：沒有新版
-2.1.220 發佈於 7 天 20 小時前 …
+## 好處與官方文件
+
+## 實測驗證
+
+## 下一步
 ```
 
-Never write 「你可以考慮…」. Either he should change something, and you say
-exactly what file and what line, or he should not, and you say 不用管.
+What each one is for:
+
+**TL;DR** — the whole release in one table, one row per item. Three columns:
+名稱、一句話、你要動嗎. The 「你要動嗎」 cell is an instruction or the literal
+words 不用管; never 「可以考慮」. A reader who stops after this table has the
+practical value already.
+
+**這解決了什麼痛點** — the workflow that was broken or annoying before, and why
+he would want this. Concrete: 「你在 CI 裡跑 `claude -p`，之前沒辦法知道 session
+中途被掛進來的 repo 帶了什麼 `CLAUDE.md`」. Not 「提升了可觀測性」. If a change
+solves no real pain, say so — 「這個沒有在解決誰的問題，是內部清理」 is a
+legitimate answer and a short one.
+
+**好處與官方文件** — what you get out of it, and the official page that
+documents it. At least one link to `code.claude.com`, `platform.claude.com` or
+`docs.claude.com` per post; CI checks for it. When the feature is undocumented,
+say that explicitly and link the nearest official page that *should* have
+covered it. 「文件裡沒有」 is a finding, and it is worth more than a link.
+
+**實測驗證** — the reproducible experiment, unchanged from before. Commands, then
+verbatim output. See below.
+
+**下一步** — a numbered list of what to do next, in order, each item concrete
+enough to act on without rereading the post. 「去 `~/.claude/settings.json` 確認
+`env` 裡沒有 `CLAUDE_CODE_ARTIFACT_COMMENTS_AUTOREACT`」, not 「評估是否啟用」.
+If the answer is genuinely "nothing", the list is one item saying what to watch
+for and when.
 
 ### Length budget — CI enforces this
 
-**Target 3000 characters of prose. Hard cap 6500.** `check-content.mjs` warns
+**Target 4500 characters of prose. Hard cap 7500.** `check-content.mjs` warns
 over the target and fails the build over the cap.
+
+（Both numbers went up by 1500 when the five-section skeleton landed. 痛點 and
+好處 are sections that did not exist before and they are prose by nature, so the
+old 3000 would have failed every post written to the new shape. The ratio of
+target to cap is unchanged.）
 
 The two numbers do different jobs. The target is the signal: over it, the post
 is probably explaining rather than reporting, and you should go look. The cap
@@ -185,28 +226,36 @@ Calibration:
   what is there is new.
 
 Full coverage is still required — compression is where the room comes from. A
-feature that changes nothing gets one clause in the 不用管 paragraph, never a
-section. Exactly **one** feature per post gets a deep section: the one carrying
-today's experiment.
+feature that changes nothing gets one row in the TL;DR table reading 不用管, and
+no prose anywhere else. 痛點 and 好處 cover the release as a whole, not one
+subsection per item; 實測驗證 covers exactly **one** feature, the one you tested.
 
 ### 其他 CI 會擋的事
 
-- 第一個 `##` 必須是「今天要動的」
+- `title` 必須含版本號（`2.1.221` 這種 `x.y.z`）
+- 五個 `##` 必須到齊，而且照 TL;DR → 痛點 → 好處與官方文件 → 實測驗證 → 下一步 的順序
+- 「好處與官方文件」段裡至少一個 `code.claude.com` / `platform.claude.com` /
+  `docs.claude.com` 連結
+- 「下一步」段必須是編號清單
 - 至少兩個 code block（指令，以及它們的真實輸出）
 - 禁用詞：「可以考慮」「這意味著」「對於…而言」「所謂的」
 
 Run `pnpm test:content` while drafting, not just before the PR.
 
-### 本日一題
+### 實測驗證
 
-The single deep section. Structure it around what you actually did:
+The one deep section. Structure it around what you actually did:
 
 1. 我試了什麼（the commands, verbatim）
 2. 發生什麼事（real output, including the failure)
-3. 所以你要改什麼
+3. 所以結論是什麼
 
 No 「它的精神是…」 heading. If the design idea matters, it comes out of the
 experiment result, not before it.
+
+A failed experiment still belongs here. 「文件說它會觸發，實際上在 `claude -p`
+下叫不動」 is the most useful thing a post can contain, and the 下一步 that comes
+out of it is 「不要接，等它能在 headless 下跑」.
 
 ### 觀點是必要的，不是加分
 
@@ -214,6 +263,11 @@ The post must contain at least one sentence where you take a position that
 could be wrong. 「這個設計我覺得是錯的，因為…」「這條規則沒道理」「我不會接
 這個」. Classification is not a position: 「適用面窄」 is a category, 「單 repo
 的人接了只是給自己找事」 is a position.
+
+It no longer gets its own section. Put it where it is earned — usually at the
+end of 實測驗證, sometimes as the reason a 好處 is smaller than advertised. A
+「我的看法」 heading tacked on the end is the shape this repo keeps reaching for
+and it is now banned; the position has to sit next to the evidence for it.
 
 If you genuinely have no opinion about anything in a release, say that in one
 sentence and move on. Manufactured opinion is worse than none.

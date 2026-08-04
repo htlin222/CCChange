@@ -19,7 +19,10 @@ const { lang = "zh-Hant", schema } = Astro.props;
   <!-- Filled at runtime by theme.ts to match the current background colour -->
   <meta name="theme-color" content="" />
 
-  <link rel="icon" href={getAssetPath("/favicon.ico")} type="image/svg+xml" />
+  <!-- SVG first for browsers that take it; .ico is the fallback and must not
+       claim to be SVG, which is what the vendored template did. -->
+  <link rel="icon" href={getAssetPath("/favicon.svg")} type="image/svg+xml" />
+  <link rel="icon" href={getAssetPath("/favicon.ico")} sizes="48x48 32x32 16x16" />
   <link rel="sitemap" href={getAssetPath("/sitemap-index.xml")} />
   <link rel="alternate" type="application/rss+xml" title="RSS Feed" href={getAssetPath("/rss.xml")} />
 
