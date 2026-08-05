@@ -172,7 +172,7 @@ for (const file of files) {
     errors.push(
       `${rel}: sections are ${shape.length ? shape.join(" → ") : "(none)"}, ` +
         `but the skeleton is exactly ${REQUIRED_SECTIONS.join(" → ")} and ` +
-        `nothing else. Use "###" for anything finer (see SKILL.md 三段骨架)`,
+        `nothing else. Use "###" for anything finer (see SKILL.md 骨架)`,
     );
   }
 
