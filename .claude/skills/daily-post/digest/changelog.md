@@ -29,13 +29,24 @@ checkable — a flag in a scratch dir, `timeout 150`, no state from his machine.
 
 ## What survives into the post
 
-One sentence, in whichever section it changes the answer.
+One sentence, plus the block that makes it checkable, in whichever section it
+changes the answer.
 
-「changelog 寫 Removed ultraplan，實際上程式碼一個 byte 沒少，關的是遠端開關」
-belongs in the post: it is why the advice is 別從腳本裡刪掉它. The `strings -a`
-counts that established it, the tarball sizes, the sentence-diff totals, the
-timing of the `npm` tag push — none of that goes in. He asked for the
-recommendation, not the forensics.
+「changelog 寫 Removed ultraplan，實際上關的是遠端開關」 belongs in the post: it
+is why the advice is 別從腳本裡刪掉它. So does the one block that shows it —
+the `isEnabled` line naming the flag, or the flag sitting in `~/.claude.json`
+with `enabled: false`. That is four lines and it costs nothing against the
+length budget.
+
+What stays out is the search: the tarball sizes, the sentence-diff totals, the
+timing of the `npm` tag push, the three symbols that turned out to be minifier
+noise. He asked for the recommendation and the receipt, not the forensics.
+
+Be exact about what the receipt covers. A `strings -a` count is scoped to the
+symbols you grepped, so it licenses 「這支指令的程式碼還在」, never 「整個執行檔
+一個 byte 沒少」 — the binaries differ by 771,552 bytes between 2.1.221 and
+2.1.222 and a reader with `wc -c` will find that in a minute. Over-claiming
+past your own evidence is the one thing that costs more than saying nothing.
 
 If a check produced nothing that changes what he does, it produced nothing for
 the post. That is a normal outcome and not a reason to write up the method.

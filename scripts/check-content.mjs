@@ -35,6 +35,7 @@ const {
   citeHostsPattern,
   bannedPhrases,
   bannedHeadings,
+  evidenceMarker,
   proseTarget,
   proseHardCap,
   minBodyChars,
@@ -194,6 +195,18 @@ for (const file of files) {
     errors.push(
       `${rel}: "${actionableSection}" must be a numbered list of concrete ` +
         `actions, in the order to do them`,
+    );
+  }
+
+  // A post that claims it went and looked has to show what it saw. Secondary
+  // claims carry a link the reader can click; a first-hand one carries nothing
+  // unless the command that produced it is in the post, and "相信我" is not a
+  // provenance label. Code blocks are free against the length budget above, so
+  // this costs the post nothing it was spending anyway.
+  if (evidenceMarker && body.includes(evidenceMarker) && !/```[\s\S]*?```/.test(body)) {
+    errors.push(
+      `${rel}: labels a claim "${evidenceMarker}" but the post contains no code ` +
+        `block — paste the command and the output that established it`,
     );
   }
 

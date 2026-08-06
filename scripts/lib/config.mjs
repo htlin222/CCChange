@@ -138,6 +138,16 @@ export function loadConfig({ knownSourceKinds } = {}) {
     problems,
   );
 
+  // Optional, unlike the keys above: a subject whose posts never make an
+  // original observation has nothing to hold evidence for. Absent and "" both
+  // mean "don't check", so a fork can ignore it without carrying a dead key.
+  const evidenceMarkerRaw = raw.lint?.evidence_marker;
+  if (evidenceMarkerRaw !== undefined && typeof evidenceMarkerRaw !== "string") {
+    problems.push(`[lint].evidence_marker: must be a string ("" disables the check)`);
+  }
+  const evidenceMarker =
+    typeof evidenceMarkerRaw === "string" ? evidenceMarkerRaw : "";
+
   const proseTarget = requireNumber(raw.lint, "prose_target", "[lint]", problems, {
     min: 1,
   });
@@ -213,6 +223,7 @@ export function loadConfig({ knownSourceKinds } = {}) {
       ),
       bannedPhrases,
       bannedHeadings,
+      evidenceMarker,
       proseTarget,
       proseHardCap,
       minBodyChars,
