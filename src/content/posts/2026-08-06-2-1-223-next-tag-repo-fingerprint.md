@@ -29,7 +29,7 @@ annotation: "送出去的是 true/false，讀進來的是檔案內容。"
 ## 對你的流程有什麼影響
 
 1. 不用急著升。`npm i -g @anthropic-ai/claude-code` 現在拿到的還是 2.1.222。要試就 `@next`，但心裡有數：沒有 changelog 可以對，出事只能自己翻。
-2. 升之前先看你的分層 `env`。三層都寫過的話，2.1.223 起同名 key 由高優先層贏，其餘的全部留著。以前靠上層整塊蓋掉才沒生效的 key，升上去會活過來。
+2. 升之前先看你的分層 `env`。同名 key 仍然只留一份，但只有某一層寫過的 key 現在全部會留下來。以前靠上層整塊蓋掉才沒生效的，升上去會活過來。
 3. 要決定關不關遙測，先知道它掃到哪。只讀 cwd 最上層，加 `.github/workflows` 和 `.cargo/`，不遞迴；cwd 就是家目錄時整段跳過。找 secrets manager 的那段最多開 20 個 `.envrc`／`.yml`／`.toml`／`.sh`，每個讀到 64 KB 為止。
 4. 真要關是 `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1`。這個開關會連 feature flag 評估一起關掉，而 Remote Control 靠那個活，官方 data usage 頁自己寫了。社群還回報過 [1M context 和 Agent View 跟著一起消失](https://github.com/anthropics/claude-code/issues/58383)。有在用 Remote Control 的話代價比那份指紋大，我不會關。
 5. 自架 gateway、或 `ANTHROPIC_MODEL` 填非官方名稱的，升上去 auto-compact 會提早動手，因為它用的是假定視窗。把 `CLAUDE_CODE_MAX_CONTEXT_TOKENS` 設成真值就行。走官方模型的不用管。
