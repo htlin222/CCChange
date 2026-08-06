@@ -74,6 +74,12 @@ const cases = [
     expect: "2 problem(s)",
   },
   {
+    // Optional key: VALID above omits it entirely and still loads.
+    name: "a non-string evidence_marker is caught",
+    toml: `${VALID}\nevidence_marker = 3\n`,
+    expect: "[lint].evidence_marker",
+  },
+  {
     name: "duplicate source ids are caught",
     toml: `${VALID}\n[[sources]]\nid = "s"\nkind = "rss"\nurl = "https://example.com/other"\n`,
     expect: "duplicate id",

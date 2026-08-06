@@ -21,8 +21,12 @@ come from there, and this file describes the flow that works for any of them.
   top and pivot to depth on the most recent substantive item. Do not
   manufacture news.
 - **Label every claim's provenance**: 官方文件 / 社群 / 本機實測.
+- **A 本機實測 claim ships the command that produced it.** 官方文件 and 社群
+  claims carry a link the reader can click. A first-hand one carries nothing
+  unless the command and its output are in the post, and 「相信我」 is not a
+  provenance label. CI enforces this via `[lint].evidence_marker`.
 - **Verify before you write.** That work is what makes the advice trustworthy.
-  Most of it does not go in the post — see Step 3.
+  The narration of it does not go in the post; the receipt does — see Step 3.
 - **The post answers the configured questions and stops.** `[post].sections` in
   order, nothing else at `##` level. CI enforces it.
 - **Every entry ends in an action or in 不用管.** Never 「可以考慮」.
@@ -31,7 +35,10 @@ come from there, and this file describes the flow that works for any of them.
 - **Run `pnpm test` before the PR.** A red PR is worse than no PR.
 
 The reader is one person who already works in this domain daily. He wants the
-recommendation, not the trail that produced it. Write for him.
+recommendation, not the trail that produced it — but he is an engineer, and a
+recommendation he cannot check is one he cannot use. Cut the trail. Keep the
+receipt: the one command whose output is the reason the recommendation is what
+it is. Two lines of pasted terminal beat two paragraphs swearing you looked.
 
 ## Step 1 — Collect
 
@@ -76,6 +83,10 @@ The rule that holds across strategies: if a check produced nothing that changes
 what the reader does, it produced nothing for the post. That is a normal
 outcome, not a reason to write up the method.
 
+When a check *did* change the advice, keep the smallest runnable thing that
+reproduces it — the grep and its count, the two lines of JSON, the byte sizes.
+Not the search that found it, not the four dead ends before it. One block.
+
 ## Step 4 — Research the discussion
 
 WebSearch for the item and its headline claims. Fetch the first-party page for
@@ -98,6 +109,12 @@ annotation: "..."                  # optional pull-quote in the margin
 ---
 ```
 
+`description` is the first thing read and the last thing revised, which is how
+it ends up disagreeing with the post. **Every count in it has to survive to the
+body**: if it promises 三件, the table has three rows and the numbered list has
+three items, or the promise changes. Recount both after the humanizer pass —
+that pass merges and drops items, and nothing checks this for you.
+
 ### Who is reading
 
 One person: the author. He already works in this domain every day and maintains
@@ -106,6 +123,13 @@ this pipeline himself. He is not evaluating whether to adopt anything.
 So: **never explain the basics of the domain.** No industry-trend paragraphs;
 he does not care about anyone's strategy, he cares what he has to change before
 Thursday. Cut every sentence a reader who already knows all this would skim.
+
+That is not a licence to leave the specifics unnamed. He knows what a feature
+flag is; he does not necessarily know what `/ultraplan` does, and he will not
+know six months from now when he reads his own archive. **A feature name gets
+what it does in the same sentence as its first mention** — 「`/ultraplan`（把
+規劃丟到 Claude Code on the web 上跑的指令）」 — once, then never again. The
+basics of the domain are assumed. The subject of this particular post is not.
 
 ### 骨架 — 只有 config 裡那幾段，順序不能換
 
@@ -168,7 +192,9 @@ fine; manufactured opinion is worse than none.
 is 2000 and 3200 characters of prose.
 
 Over target almost always means a paragraph explaining how something was found
-out. Cut that paragraph, not the advice.
+out. Cut that paragraph, not the advice — and not the code block under it. The
+paragraph is you narrating the search; the block is the evidence. Deleting the
+block to get under budget saves nothing, because blocks are not counted.
 
 Prose means the post with code blocks, tables, block quotes and link targets
 stripped out. A settings snippet or a one-line command he is meant to paste
@@ -184,6 +210,7 @@ Everything below is read from config.toml, so it changes when the subject does:
 - 全文至少一個 `[lint].cite_hosts` 的連結
 - `[lint].banned_headings` 不能當標題
 - `[lint].banned_phrases` 一個都不能出現
+- 出現 `[lint].evidence_marker`（本站是 `本機實測`）就必須有 code block
 
 Run `pnpm test:content` while drafting, not just before the PR.
 
@@ -203,16 +230,31 @@ Concrete bans:
   → 拆成兩句
 - **被動語態堆疊**：「這條規則被靜默載入」→「這條規則就這樣載進來了」
 - **連續三句同長度**：插一句短的
+- **一段裡的「它」換了對象**：中文沒有性數可以幫你分辨，所以一段之內
+  「它」只能指同一樣東西。指到第二樣就把名字寫出來。「有人會照著它去清掉
+  wrapper，而它其實還在」—— 前一個是 changelog，後一個是那支指令，讀者
+  只能猜
+- **比喻擋在數字前面**：「那功能的帳很難算」後面如果跟著一個實際數字，
+  就直接講數字，把比喻刪掉。查證過的量詞是這個站唯一的資產
 
 Read it out loud in your head. If you would not say it to a colleague at a
 whiteboard, rewrite it.
 
 ### 反例
 
-`src/content/posts/2026-08-05-2-1-222-removed-ultraplan.md` is the reference for
-what a post looks like under these rules. Its git history is the more useful
-half: the version before the three-question rewrite had the same findings in
-roughly four times the words, and the reader's verdict on it was 拉拉雜雜.
+`src/content/posts/2026-08-05-2-1-222-removed-ultraplan.md` is the reference,
+and its git history is the more useful half. It has been wrong in both
+directions, which is why the rules above are shaped the way they are.
+
+The first version had the findings in roughly four times the words and the
+verdict was 拉拉雜雜. Cutting to three sections fixed that and broke something
+else: the post asserted 「程式碼一個 byte 都沒少」 three times without ever
+showing a command, named `ultraplan` in the title without saying what it did,
+promised 三件 in the description over a five-row table, and let 「它」 change
+referent inside one paragraph. The verdict that time was 脈絡不清、沒有邏輯.
+
+Both failures came from the same instinct: cut whatever is not the advice. The
+receipt is not narration. Cut around it.
 
 ## Step 6 — De-slop the draft (mandatory)
 
