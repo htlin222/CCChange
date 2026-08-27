@@ -12,7 +12,7 @@ annotation: "quiet 不是關掉，是不讓你看見。"
 | 項目 | 一句話 |
 | --- | --- |
 | `SendFeedback` | changelog 寫 Added，但 2.1.237 的二進位裡就有了，這版是打開它並補上文件 |
-| `feedbackDrafts` | 三個值。預設出卡片，`quiet` 照樣起草只是不出卡，`off` 才真的不排隊 |
+| `feedbackDrafts` | 三個值。`notify` 是預設，出卡片；`quiet` 照樣起草只是不出卡；`off` 才真的不排隊 |
 | 草稿位置 | `~/.claude/feedback/drafts/`，全帳號佇列 10 筆，第 11 筆擠掉最舊的，30 天過期 |
 | 卡片上限 | 每個 session 三張，這個數字 Anthropic 可以從伺服器改，不必發版 |
 | 逐字稿 | 只有在審核畫面把 Send transcript 留在 yes 才會附。從卡片直接送不含逐字稿 |
@@ -38,7 +38,7 @@ annotation: "quiet 不是關掉，是不讓你看見。"
 ## 對你的流程有什麼影響
 
 1. 先看佇列：`ls -la ~/.claude/feedback/drafts/`。過期是 30 天，所以那裡如果有東西，是你這一個月某次罵它的時候寫下來的。看過再決定要不要留。
-2. 不想要就設 `off`，別設 `quiet`。文件寫 `quiet` 是 Claude continues drafting feedback without showing cards，草稿照排，只是你看不到。單次跑用 `CLAUDE_CODE_SEND_FEEDBACK=0`。我自己設 `off`，理由不是怕它外洩，是決定要不要送的那一刻我通常正在趕別的事，那不是個做判斷的好時機。
+2. 不想要就設 `off`，別設 `quiet`。文件寫 `quiet` 是 Claude continues drafting feedback without showing cards，草稿照排，只是你看不到；不寫這個鍵等同 `notify`。單次跑用 `CLAUDE_CODE_SEND_FEEDBACK=0`。我自己設 `off`，理由不是怕它外洩，是決定要不要送的那一刻我通常正在趕別的事，那不是個做判斷的好時機。
 3. 留著的話記住哪條路會帶逐字稿。卡片上直接送不含逐字稿；進審核畫面那條，Send transcript 預設留在 yes，整份對話跟著走，而且跟 `/feedback` 同一條路，[保留五年](https://code.claude.com/docs/en/data-usage)（官方文件）。逐字稿裡有你貼進去的東西。
 4. 每 session 三張這個上限別當常數用。文件明說 Anthropic 可以從伺服器調它，不必發版。所以哪天卡片變多或變少，先別懷疑自己的設定被改掉。
 5. 跨 session 訊息又縮回一行了。2.1.228 才把它改成 inline 顯示，這版收回去，看全文按 Ctrl+O。常在 session 之間互丟訊息的話，眼睛要重新習慣。
