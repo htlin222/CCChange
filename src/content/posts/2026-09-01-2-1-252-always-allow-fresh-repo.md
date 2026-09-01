@@ -29,7 +29,7 @@ tasks 目錄那條的成因從二進位看得出來。macOS 的 `/tmp` 本身就
 
 ```
 by realpath; same directory (device and inode), treated as an alias
-: not the same directory by a link-free route; refused
+not the same directory by a link-free route; refused
 ```
 
 判斷從「路徑上不准有連結」放寬成「解出來是同一個 inode 就算同一個」。
