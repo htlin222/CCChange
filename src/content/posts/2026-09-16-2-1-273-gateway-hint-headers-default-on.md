@@ -27,12 +27,12 @@ header 這條是官方 changelog 跟執行檔講的不一樣。changelog 寫 opt
 
 auto-compact 那條是單純算錯。advisor 要你自己用 `/advisor`、`advisorModel` 或 `--advisor` 開，[文件](https://code.claude.com/docs/en/advisor)講得很清楚，不設就不會有。2.1.271 和 2.1.272 的執行檔裡連 `iterations.findLast` 都搜不到，這個挑法是這版才寫的。
 
-九月十號那道檢查，當初的理由站得住腳：`eval`、`env -C` 這種行 permission checker 讀不完整，讀不完整就不該讓 allow rule 蓋過去。代價是 `time -p make build` 也被歸進同一類，於是整段收掉了。
+2.1.268 那道檢查，當初的理由站得住腳：`eval`、`env -C` 這種行 permission checker 讀不完整，讀不完整就不該讓 allow rule 蓋過去。代價是 `time -p make build` 也被歸進同一類，於是整段收掉了。
 
 ## 對你的流程有什麼影響
 
 1. 升到 2.1.273，`npm i -g @anthropic-ai/claude-code` 拿到的就是它。
 2. 決定 header 要不要送。你是直連，所以它現在開著，每個 request 會帶走上一輪叫過的工具名和各自花了多久。不想送就在 `~/.claude/settings.json` 的 `env` 放 `"CLAUDE_CODE_GATEWAY_HINT_HEADERS": "0"`，`0` 在它認得的 falsy 字串裡。我自己留著開，工具名和毫秒數對我沒什麼好藏的。你的帳可能不是這樣算。
-3. `time -p make build`、`env -C somewhere make` 這類指令的 allow rule 現在又有效了。九月中如果為了繞過它把 settings 裡的規則放寬，或在腳本裡塞了 bypass，收回去。
+3. `time -p make build`、`env -C somewhere make` 這類指令的 allow rule 現在又有效了。升上 2.1.268 之後如果為了繞過它把 settings 裡的規則放寬，或在腳本裡塞了 bypass，收回去。
 4. auto-compact 不用管，前提是你沒設 advisor。設了的話，這幾版你看到的 context 讀數大約是實際的兩倍，`/autocompact` 設的視窗等於被腰斬，升上去就回來了。
 5. `.claude/scheduled_tasks.json` 只有在你複製 checkout 的時候會碰到。開 worktree 之前把它從複製過去的 `.claude/` 裡拿掉，不然新 session 不跑，得在那邊重建。之前它是默默接手跑別人的 task，現在會講。
