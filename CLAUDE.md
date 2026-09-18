@@ -8,10 +8,10 @@
 每日講義的完整程序在 skill 裡，不在這裡：
 
 ```
-/daily-changelog-post
+/daily-post
 ```
 
-→ `.claude/skills/daily-changelog-post/SKILL.md`
+→ `.claude/skills/daily-post/SKILL.md`
 
 這份 CLAUDE.md 只放**每個 session 都適用的不變條件**。要改出刊流程請改 skill，
 不要把程序複製到這裡；兩份會分岔。
@@ -20,11 +20,16 @@
 
 | 路徑 | 是什麼 |
 | --- | --- |
+| `config.toml` | 這個站在寫什麼。換主題時唯一要改的地方 |
 | `src/content/posts/YYYY-MM-DD-slug.md` | 講義本體。**唯一**每日出刊會動到的地方 |
 | `src/content/pages/` | 關於頁、首頁引言 |
 | `src/content.config.ts` | frontmatter 的 Zod schema |
 | `configs/user.config.ts` | 站名、導覽、社群連結 |
-| `scripts/check-*.mjs` | CI 跑的兩支檢查 |
+| `scripts/lib/config.mjs` | 讀 + 驗證 config.toml，兩支 script 共用 |
+| `scripts/sources/*.mjs` | 每種資料來源一支 adapter，`index.mjs` 是註冊表 |
+| `scripts/fetch-sources.mjs` | 照 config 抓來源，吐正規化 JSON |
+| `scripts/check-*.mjs` | CI 跑的檢查 |
+| `.claude/skills/daily-post/digest/` | 消化策略，`[digest].strategy` 指名載入哪份 |
 | `.github/workflows/` | ci / auto-merge / deploy |
 | `src/` 其餘 | vendored [Lipi](https://github.com/thelocalhoststudio/lipi) 模板 |
 
@@ -64,6 +69,9 @@ Lipi 的 remark plugins 匯入了沒宣告在 `package.json` 的傳遞相依
 所以：出刊時如果順手想修個 bug，**開另一支 PR**，不要跟講義混在一起，否則整支
 PR 會卡住等人。
 
+`config.toml` 也在這條規則裡：它能改變 `check-content.mjs` 的判定，所以動到它的
+PR 一樣要人看過。
+
 ### 4. 合併是 workflow 的事，不是 agent 的
 
 `gh pr merge` 在 `.claude/settings.json` 裡被 deny。開 PR、貼上驗證結果，然後停手。
@@ -90,10 +98,21 @@ PR 會卡住等人。
 pnpm install          # Node >= 22.12
 pnpm dev              # http://localhost:4321/CCChange
 pnpm build            # prebuild 會先跑 check-content
-pnpm test             # check-content + check-build，開 PR 前必須是 0 exit
+pnpm fetch:sources    # 照 config.toml 抓來源 → .cache/sources/YYYY-MM-DD.json
+pnpm test             # test-config + check-content + check-build，開 PR 前必須是 0 exit
 ```
 
-`pnpm test:content` / `pnpm test:build` 可以單獨跑。
+`pnpm test:config` / `test:content` / `test:build` 可以單獨跑。
+
+`fetch:sources` 吃 `-- --only <id>` 抓單一來源、`-- --fresh` 略過快取。快取的
+10 分鐘下限是防止同一個 IP 被出版社升級成 403/429，不是為了跑得快。
+
+換主題不用改 `scripts/`：把 `config.toml` 換掉就好。
+`config.example.journal.toml` 是一份跑得動的示範（三支期刊 RSS），試跑：
+
+```bash
+CCCHANGE_CONFIG=config.example.journal.toml pnpm fetch:sources
+```
 
 ## 語言
 
