@@ -1,0 +1,85 @@
+# 另一個主題長什麼樣 —— 血液腫瘤科的每日文獻講義。
+#
+# 這份不是設定檔，是示範：把它複製成 config.toml，這個 repo 就從
+# 「Claude Code changelog 講義」變成「期刊講義」，scripts/ 一行都不用改。
+#
+# 試跑：
+#   CCCHANGE_CONFIG=config.example.journal.toml pnpm fetch:sources
+#
+# 跟正式的 config.toml 比，改的是 sources、digest.strategy、post.sections、
+# lint.cite_hosts、以及 title_pattern 清空。其餘照抄。
+
+[site]
+id = "journal-daily"
+lang = "zh-Hant"
+
+
+# ── 收集 ──────────────────────────────────────────────────────────────
+#
+# 三支都是 kind = "rss"，但底層方言不同：JCO 是 RSS 1.0（RDF，item 掛在
+# 根節點不在 channel 底下，日期還多包一層 dc:date），另外兩支是 RSS 2.0。
+# adapter 已經吃掉這個差異，這裡不用管。
+
+[[sources]]
+id = "jco"
+kind = "rss"
+url = "https://ascopubs.org/action/showFeed?type=etoc&feed=rss&jc=jco"
+# ascopubs.org 在 Cloudflare 後面，同源 Referer 是通過的條件之一。
+referer = "https://ascopubs.org/loi/jco"
+limit = 50
+
+[[sources]]
+id = "nejm-heme-onc"
+kind = "rss"
+url = "https://onesearch-rss.nejm.org/api/specialty/rss?context=nejm&specialty=hematology-oncology"
+limit = 50
+
+[[sources]]
+id = "pubmed-blood"
+kind = "rss"
+url = "https://pubmed.ncbi.nlm.nih.gov/rss/search/1L5AT7N6rGvBm3-KX3KlG8UZrXSOhP8AGNCuYYH-ucz8SijUCJ/?limit=50&utm_campaign=pubmed-2&fc=20240727041330"
+limit = 50
+
+
+[http]
+user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+accept_language = "en-US,en;q=0.9"
+cookie_jar = true
+retry_on_403 = 1
+retry_backoff_seconds = [2, 5]
+cache_minutes = 10
+timeout_seconds = 30
+
+
+[digest]
+strategy = "journal-triage"
+
+
+# ── 寫作 ──────────────────────────────────────────────────────────────
+#
+# 同樣三個問題，換成臨床的問法。骨架的形狀沒變，因為讀者的處境沒變：
+# 他早上要決定今天做什麼。
+
+[post]
+sections = ["今天出了什麼", "證據站得住嗎", "你的病人要不要改"]
+actionable_section = "你的病人要不要改"
+# 期刊沒有版本號可掛，關掉這條檢查。
+title_pattern = ""
+
+
+[lint]
+# 第一手 = 期刊原文或 PubMed 條目，不是新聞稿轉述。
+cite_hosts = [
+  "ascopubs.org",
+  "www.nejm.org",
+  "nejm.org",
+  "pubmed.ncbi.nlm.nih.gov",
+  "doi.org",
+]
+
+banned_phrases = ["可以考慮", "這意味著", "對於.{0,8}而言", "所謂的"]
+banned_headings = ["我的看法"]
+
+prose_target = 2000
+prose_hard_cap = 3200
+min_body_chars = 400
