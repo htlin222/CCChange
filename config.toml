@@ -1,0 +1,105 @@
+# 這個站在寫什麼。
+#
+# 這份檔案是「換主題時唯一要改的地方」。scripts/ 底下的東西讀它，
+# 不再自己內建任何領域知識 —— check-content.mjs 裡不該再出現一個中文字串
+# 或一個 claude.com。
+#
+# 它裝得下的是常數：章節名、字數、禁用詞、feed URL、抓取參數。
+# 它裝不下的是判斷：什麼算值得寫的新聞、讀者是誰、語氣怎麼拿捏。
+# 那些留在 .claude/skills/daily-post/ 的散文裡，因為 TOML 表達不了，
+# 硬塞進來只會讓兩邊都難讀。
+#
+# 動到這個檔案的 PR 不會自動合併（auto-merge.yml 的路徑白名單只放行
+# src/content/ 和 public/）。這是刻意的：它能改變 CI 的判定結果。
+
+[site]
+id = "ccchange"
+lang = "zh-Hant"
+
+
+# ── 收集 ──────────────────────────────────────────────────────────────
+#
+# 每個 source 的 kind 對應 scripts/sources/<kind>.mjs。新增來源型別 =
+# 新增一支檔案並在 scripts/sources/index.mjs 註冊，fetch-sources.mjs 不用動。
+
+[[sources]]
+id = "claude-code"
+kind = "npm-changelog"
+package = "@anthropic-ai/claude-code"
+repo = "anthropics/claude-code"
+changelog = "https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md"
+# 超過這個時數沒有新版，就是「沒有新版的日子」那條路徑。
+freshness_hours = 24
+
+
+# ── 抓取策略 ──────────────────────────────────────────────────────────
+#
+# 出版社的站（Atypon / Cloudflare 前面那一票：ascopubs.org、
+# academic.oup.com、onlinelibrary.wiley.com、nejm.org）會對看起來不像瀏覽器
+# 的請求回 403。預設 header 的 HTTP client 一定被擋。
+#
+# 這幾個值是共用的；per-source 的 referer 寫在該 source 自己那段。
+
+[http]
+user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+accept_language = "en-US,en;q=0.9"
+# 第一次 GET 拿到的 cf_clearance 要能帶到後續請求，否則等於每次都重新挑戰。
+cookie_jar = true
+retry_on_403 = 1
+retry_backoff_seconds = [2, 5]
+# 同一個 IP 反覆打會被升級成 403/429，所以快取不是效能考量，是防禦。
+cache_minutes = 10
+timeout_seconds = 30
+
+
+# ── 消化 ──────────────────────────────────────────────────────────────
+#
+# 消化是模型在做的判斷，不是程式。這裡只指名要載入哪份指引：
+# .claude/skills/daily-post/digest/<strategy>.md
+
+[digest]
+strategy = "changelog"
+
+
+# ── 寫作 ──────────────────────────────────────────────────────────────
+#
+# 讀者的三個問題，照他問的順序。除了這三個沒有別的 `##`：
+# 被這個骨架換掉的東西（新鮮度表格、二進位拆解、結尾的個人看法）
+# 就是當初「拉拉雜雜」那句評語指的東西。`##` 底下的 `###` 不受限。
+
+[post]
+sections = ["改了什麼", "為什麼要改", "對你的流程有什麼影響"]
+# 這一節必須收斂成編號清單 —— 讀者是為它來的，不能寫成評論然後散掉。
+actionable_section = "對你的流程有什麼影響"
+# 標題要指名它在講哪一版。空字串 = 不檢查（文獻站之類沒有版本號的主題）。
+title_pattern = '\d+\.\d+\.\d+'
+
+
+# ── 檢查 ──────────────────────────────────────────────────────────────
+
+[lint]
+# 每篇都要引到第一手頁面。二手來源常把 settings key 和定價抄錯，
+# 這條規則就是為了這個而存在。
+cite_hosts = ["code.claude.com", "platform.claude.com", "docs.claude.com"]
+
+# regex，不是純字串比對 —— 「對於.{0,8}而言」要能抓到
+# 「對於你的流程而言」跟「對於這件事而言」。寫壞的 regex 會在載入時
+# 就被 config.mjs 指名，不會炸成看起來像 script 壞掉的 SyntaxError。
+banned_phrases = ["可以考慮", "這意味著", "對於.{0,8}而言", "所謂的"]
+
+# 立場要長在它支撐的那句建議裡，不是另外掛一塊。
+banned_headings = ["我的看法"]
+
+# 兩個數字做的是不同的事。
+#
+# target 是訊號：超過通常代表文章在解釋而不是在報告，所以只警告，
+# 讓人自己去看一眼。hard_cap 是失控的擋板，沒別的意思。
+#
+# 校準紀錄，給下一個要動這兩個數字的人：
+#   2026-08-03 舊骨架   5932 字，幾乎全是原創發現，而且仍然太長 —— 大半是方法。
+#   2026-08-05 重寫後   約 1400 字，講同一件事，講給早上要決定做什麼的人聽。
+prose_target = 2000
+prose_hard_cap = 3200
+
+# 短到這個程度多半是還沒寫完，只警告不擋。
+min_body_chars = 400

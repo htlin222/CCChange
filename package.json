@@ -10,7 +10,9 @@
     "dev": "astro dev",
     "prebuild": "node scripts/check-content.mjs",
     "build": "astro build && pagefind --site dist && cp -r dist/pagefind public/",
-    "test": "node scripts/check-content.mjs && node scripts/check-build.mjs",
+    "fetch:sources": "node scripts/fetch-sources.mjs",
+    "test": "node scripts/test-config.mjs && node scripts/check-content.mjs && node scripts/check-build.mjs",
+    "test:config": "node scripts/test-config.mjs",
     "test:content": "node scripts/check-content.mjs",
     "test:build": "node scripts/check-build.mjs",
     "preview": "astro preview",
@@ -30,6 +32,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.3.0",
     "astro": "^6.4.6",
+    "fast-xml-parser": "^5.10.1",
     "glightbox": "^3.3.1",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-slug": "^6.0.0",
@@ -37,6 +40,7 @@
     "remark-gfm": "^4.0.1",
     "satori": "^0.26.0",
     "satori-html": "^0.3.2",
+    "smol-toml": "^1.7.1",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
