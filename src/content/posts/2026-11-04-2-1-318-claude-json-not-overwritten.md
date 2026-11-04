@@ -46,7 +46,7 @@ ls -1 ~/.claude/backups/ | grep corrupted
 
    有印出東西，那一次就是舊版把你的 `~/.claude.json` 換成了預設值。檔名裡的 epoch 時間戳是當時那份，`mcpServers` 得自己從裡面撈回來。318 之後不會再有新的。
 
-3. CI 跑 `claude -p` 之前加一道 `settings.json` 的檢查。318 修的是 `~/.claude.json`，`settings.json` 這半沒動，我實測兩版行為完全一樣：JSON 壞掉時它不會被改寫，但 `claude -p` 會 exit 0、把整個 turn 跑完，你的 hooks 和權限規則一條都沒生效，只有 stderr 有一行字說它沒載到。CI 綠燈，底下權限規則一條都沒生效，這種狀況比 CI 直接紅掉難查。
+3. CI 跑 `claude -p` 之前加一道 `settings.json` 的檢查。318 修的是 `~/.claude.json`，`settings.json` 這半沒動，我實測兩版行為完全一樣：JSON 壞掉時它不會被改寫，但 `claude -p` 會 exit 0、把整個 turn 跑完，你的 hooks 和權限規則一條都沒生效，只有 stderr 有一行字說它沒載到。這種綠燈比直接紅掉難查。
 
 ```bash
 jq empty ~/.claude/settings.json || exit 1
