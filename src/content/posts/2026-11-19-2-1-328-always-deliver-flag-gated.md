@@ -12,7 +12,7 @@ annotation: "兩個新 key 都還關著。今天只需要知道它們在。"
 | 項目 | 一句話 |
 | --- | --- |
 | 2.1.328 | 11-18 23:09 UTC 上 npm，我查的時候過了 1.1 小時。離 327 隔 26.6 小時 |
-| changelog | 還沒有 328 這一節。GitHub main 上最新還是 327，間隔五分鐘查兩次都一樣 |
+| changelog | 還沒有 328 這一節。GitHub main 上最新還是 327，十一分鐘內查三次都一樣 |
 | 時間來源 | `gh api` 在這個容器照樣 403，`pushed_at` 拿不到，上面兩行的時間都是 npm 的 |
 | `alwaysDeliverInSession` | 新 key。被扣住的訊息批准一次之後，同範圍的後續就直接送進來 |
 | `remoteMessageReceipts` | 新 key。`on`（預設）/ `always` / `off`，管雲端和 Remote Control 那邊的送達通知 |
